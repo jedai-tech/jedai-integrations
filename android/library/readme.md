@@ -1,4 +1,4 @@
-![Latest Release](https://img.shields.io/badge/latest%20release-4.5.4-brightgreen)
+![Latest Release](https://img.shields.io/badge/latest%20release-4.20.4-brightgreen)
 
 # Интеграция библиотеки JEDAI
 
