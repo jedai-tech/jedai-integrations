@@ -1,6 +1,6 @@
 ![Latest Release](https://img.shields.io/badge/latest%20release-4.5.4-brightgreen)
 
-# 1. Integrate Ailet library into project
+# 1. Интеграция библиотеки JEDAI в ваш проект
 
 - [1. Integrate Ailet library into project](#1-integrate-ailet-library-into-project)
   - [1.1. Подключение используя Maven (GitHub)](#11-подключение-используя-maven-github)
