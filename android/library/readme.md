@@ -1,68 +1,80 @@
 ![Latest Release](https://img.shields.io/badge/latest%20release-4.5.4-brightgreen)
 
-# 1. Интеграция библиотеки JEDAI в ваш проект
+# Интеграция библиотеки JEDAI
 
-- [1. Integrate Ailet library into project](#1-integrate-ailet-library-into-project)
-  - [1.1. Подключение используя Maven (GitHub)](#11-подключение-используя-maven-github)
-    - [1.1.1. Создайте GitHub personal access token](#111-создайте-github-personal-access-token)
-    - [1.1.2. Добавьте в проект репозиторий Ailet](#112-добавьте-в-проект-репозиторий-ailet)
-    - [1.1.3. Добавьте в build.gradle модуля две зависимости:](#113-добавьте-в-buildgradle-модуля-две-зависимости)
-    - [1.1.4. Proguard rules](#114-proguard-rules)
-  - [1.2. Использование](#12-использование)
-    - [1.2.1. Инициализация](#121-инициализация)
-    - [1.2.2. Использование](#122-использование)
-  - [1.3 Методы](#13-методы)
-    - [1.3.1 Список доступных серверов. Метод getServers()](#131-список-доступных-серверов-метод-getservers)
-    - [1.3.2 Инициализация библиотеки. Метод init()](#132-инициализация-библиотеки-метод-init)
-    - [1.3.3 Начало визита. Метод start()](#133-начало-визита-метод-start)
-    - [1.3.4 Получение отчета по визиту. Метод getReports()](#134-получение-отчета-по-визиту-метод-getreports)
-    - [1.3.5 Отображение сводного отчета по визиту. Метод showSummaryReport()](#135-отображение-сводного-отчета-по-визиту-метод-showsummaryreport)
-    - [1.3.6 Выбор активного портала. Метод setPortal()](#136-выбор-активного-портала-метод-setportal)
-    - [1.3.7 Загрузка справочников. Метод requestSyncCatalogs()](#137-загрузка-справочников-метод-requestsynccatalogs)
-      - [Пример загрузки справочников в мультипортальном режиме](#пример-загрузки-справочников-в-мультипортальном-режиме)
-    - [1.3.8 Отображение визита. Метод showVisit()](#138-отображение-визита-метод-showvisit)
-    - [1.3.9 Завершение визита. Метод finishVisit()](#139-завершение-визита-метод-finishvisit)
-    - [1.3.10 Выход пользователя. Метод logout()](#1310-выход-пользователя-метод-logout)
-    - [1.3.11 Статистика синхронизации визитов. Метод getTotalSyncStat()](#1311-статистика-синхронизации-визитов-метод-gettotalsyncstat)
-    - [1.3.12 Синхронизация моделей On-device. Метод syncPalomna()](#1312-синхронизация-моделей-on-device-метод-syncpalomna)
-      - [1.3.12.1 Широковещательное (broadcast) сообщение](#13121-широковещательное-broadcast-сообщение)
-      - [Extras](#extras)
-  - [1.4 Широковещательное (broadcast) сообщение](#14-широковещательное-broadcast-сообщение)
-  - [1.7 Известные проблемы и их устранение](#17-известные-проблемы-и-их-устранение)
-    - [1.7.1 Gradle 8.x и обсфукация](#171-gradle-8x-и-обсфукация)
-  - [1.6 Пример отчета](#16-пример-отчета)
+Библиотека JEDAI встраивает съемку визита, отчеты и синхронизацию в ваше Android-приложение.
 
-## 1.1. Подключение используя Maven (GitHub)
+Классы API: `Ailet`, `AiletClient`. Пакет Maven: `com.ailet.android:lib`.
 
-### 1.1.1. Создайте GitHub personal access token
+Чтобы вызвать JEDAI без библиотеки, используйте [взаимодействие через Android Intent](../intents/readme.md).
 
-- Откройте веб-интерфейс вашего проекта в GitHub.
-- В правом верхнем углу любой страницы щелкните фотографию своего профиля и нажмите **Settings**.
-- В левой боковой панели нажмите **Developer settings**
-- В левой боковой панели нажмите **Personal access tokens** -> **Tokens** и затем нажмите кнопку **Generate new token**, чтобы создать новый токен.
-- Отметьте флажком поле ``read:packages``.
-- Нажмите кнопку **Generate token** внизу страницы.
+- [Пример сценария](#пример-сценария)
+- [Что нужно для работы](#что-нужно-для-работы)
+  - [Как создать GitHub personal access token](#как-создать-github-personal-access-token)
+  - [Как подключить репозиторий Maven](#как-подключить-репозиторий-maven)
+  - [Как добавить зависимости](#как-добавить-зависимости)
+  - [Правила ProGuard](#правила-proguard)
+- [Как инициализировать библиотеку](#как-инициализировать-библиотеку)
+- [Как вызывать методы](#как-вызывать-методы)
+- [On-device распознавание (Palomna)](#on-device-распознавание-palomna)
+- [Справочник методов](#справочник-методов)
+  - [getServers()](#getservers)
+  - [init()](#init)
+  - [start()](#start)
+  - [getReports()](#getreports)
+  - [showSummaryReport()](#showsummaryreport)
+  - [setPortal()](#setportal)
+  - [requestSyncCatalogs()](#requestsynccatalogs)
+  - [showVisit()](#showvisit)
+  - [finishVisit()](#finishvisit)
+  - [logout()](#logout)
+  - [getTotalSyncStat()](#gettotalsyncstat)
+  - [syncPalomna()](#syncpalomna)
+- [Широковещательное сообщение](#широковещательное-сообщение)
+- [Миграция с IntRtl](#миграция-с-intrtl)
+- [Пример отчета](#пример-отчета)
+- [Известные проблемы](#известные-проблемы)
+  - [Gradle 8.x и обфускация](#gradle-8x-и-обфускация)
 
-### 1.1.2. Добавьте в проект репозиторий Ailet
+## Пример сценария
 
-Вариант 1 (классический). Добавьте репозиторий в корневой ``build.gradle``:
+Чтобы провести визит и получить отчет:
 
-```groovy
-allprojects {
-    repositories {
-        maven {
-            url 'https://maven.pkg.github.com/intrtl/irlib'
-            credentials {
-                username 'your GitHub username'
-                password 'personal GitHub access token'
-            }
-        }
-    }
-}
-```
+1. Создайте GitHub personal access token с правом `read:packages`.
+2. Подключите репозиторий Maven и зависимость `com.ailet.android:lib`.
+3. Вызовите `Ailet.initialize` в классе `Application`.
+4. Вызовите `init()` через `Ailet.getClient()`.
+5. Вызовите `start()` и сделайте фото.
+6. Дождитесь broadcast о готовности отчета или вызовите `getReports()`.
 
-Вариант 2 (используя ``settings.gradle`` и ``DependencyResolutionManagement``). Добавьте репозиторий
-в ``settings.gradle``:
+## Что нужно для работы
+
+- Токен начальной авторизации. Его выдает команда JEDAI.
+- GitHub-аккаунт с правом читать пакеты `intrtl/IRLib`.
+
+Актуальную версию библиотеки смотрите в [списке версий](https://github.com/intrtl/IRLib/packages/1361609/versions).
+
+### Как создать GitHub personal access token
+
+Чтобы скачивать пакеты JEDAI из GitHub Packages:
+
+1. Откройте GitHub.
+2. Нажмите аватар в правом верхнем углу.
+3. Выберите **Settings**.
+4. Откройте **Developer settings**.
+5. Откройте **Personal access tokens** → **Tokens (classic)**.
+6. Нажмите **Generate new token**.
+7. Включите право `read:packages`.
+8. Нажмите **Generate token**.
+9. Сохраните токен: GitHub покажет его один раз.
+
+Не коммитьте токен в репозиторий. Вынесите логин и токен в `gradle.properties` или в переменные окружения.
+
+### Как подключить репозиторий Maven
+
+Чтобы Gradle скачивал библиотеку JEDAI, добавьте репозиторий одним из способов.
+
+**Вариант 1.** Добавьте репозиторий в `settings.gradle`:
 
 ```groovy
 dependencyResolutionManagement {
@@ -82,22 +94,44 @@ dependencyResolutionManagement {
 }
 ```
 
-### 1.1.3. Добавьте в build.gradle модуля две зависимости:
-
-[Список версий](https://github.com/intrtl/IRLib/packages/1361609/versions)
+**Вариант 2.** Добавьте репозиторий в корневой `build.gradle`:
 
 ```groovy
-// библиотека Ailet
-implementation "com.ailet.android:lib:1.0.0"// Указать конкретную версию (список версий по ссылке https://github.com/intrtl/IRLib/packages/1361609/versions)
-implementation "com.ailet.android:lib:+"// Последняя доступная версия
-// необязательно: модуль техподдержки
-implementation "com.ailet.android:lib-feature-techsupport-intercom:1.0.0"// Конкретная версия, совпадает с версией библиотеки
-implementation "com.ailet.android:lib-feature-techsupport-intercom:+"// Последняя доступная версия
+allprojects {
+    repositories {
+        maven {
+            url 'https://maven.pkg.github.com/intrtl/irlib'
+            credentials {
+                username 'your GitHub username'
+                password 'personal GitHub access token'
+            }
+        }
+    }
+}
 ```
 
-### 1.1.4. Proguard rules
+### Как добавить зависимости
 
-```kotlin
+Чтобы подключить библиотеку, добавьте в `build.gradle` модуля зависимость. Подставьте версию из [списка версий](https://github.com/intrtl/IRLib/packages/1361609/versions):
+
+```groovy
+implementation "com.ailet.android:lib:1.0.0"
+```
+
+Динамическая версия `+` подтянет последний пакет и может сломать сборку без изменения кода. Для рабочих сборок указывайте конкретную версию.
+
+Чтобы включить модуль техподдержки, добавьте зависимость той же версии, что и у библиотеки:
+
+```groovy
+implementation "com.ailet.android:lib-feature-techsupport-intercom:1.0.0"
+```
+
+### Правила ProGuard
+
+Чтобы обфускация не ломала библиотеку, добавьте в `proguard-rules.pro`:
+
+```proguard
+-keep class com.ailet.** { *; }
 -keep class com.ailet.lib3.** { *; }
 -keep interface com.ailet.lib3.** { *; }
 -keep enum com.ailet.lib3.** { *; }
@@ -108,8 +142,8 @@ implementation "com.ailet.android:lib-feature-techsupport-intercom:+"// Посл
 
 -keepnames class com.ailet.lib3.** { *; }
 -keepattributes *Annotation*
-#
-## Правила для Gson
+-keepattributes Signature
+
 -keep class com.google.gson.** { *; }
 -keep class sun.misc.Unsafe { *; }
 -keep interface com.google.gson.TypeAdapter
@@ -117,16 +151,11 @@ implementation "com.ailet.android:lib-feature-techsupport-intercom:+"// Посл
 -keep interface com.google.gson.JsonDeserializer
 
 -dontwarn com.ailet.lib3.**
-
--keepattributes Signature
--keepattributes *Annotation*
 ```
 
-## 1.2. Использование
+## Как инициализировать библиотеку
 
-### 1.2.1. Инициализация
-
-Перед началом работы необходимо инициализировать объект ``Ailet`` в вашем наследнике ``Application``:
+Чтобы начать работу, вызовите `Ailet.initialize` в наследнике `Application`:
 
 ```kotlin
 class App : Application() {
@@ -134,28 +163,33 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // модули опционального функционала библиотеки
         val features = setOf<AiletFeature>(
-                DefaultStockCameraFeature(), // модуль стоковой камеры
-                IntercomTechSupportManager(this), // модуль техподдержки
-                HostAppInstallInfoProviderFeature(
-                        this,
-                        BuildConfig.VERSION_NAME,
-                        BuildConfig.VERSION_CODE,
-                        AiletLibInstallInfo
-                ) // модуль идентификации (поможет при диагностике проблем)
+            DefaultStockCameraFeature(),
+            IntercomTechSupportManager(this),
+            HostAppInstallInfoProviderFeature(
+                this,
+                BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_CODE,
+                AiletLibInstallInfo
+            )
         )
 
-        // токен начальной авторизации, предоставленный командой Ailet
         val accessToken = "..."
-        
-        // инициализация библиотеки с вашим токеном и выбранными модулями
+
         Ailet.initialize(this, accessToken, features)
     }
 }
 ```
 
-Если в приложении пользователем дано разрешение на использование камеры и при вызове экрана камеры Ailet он сразу же закрывается без ошибок (exceptions), то добавьте в поле ``features`` дополнительный модуль
+Модули в `features` необязательны:
+
+- `DefaultStockCameraFeature` — стоковая камера;
+- `IntercomTechSupportManager` — техподдержка;
+- `HostAppInstallInfoProviderFeature` — идентификация сборки для диагностики.
+
+После `initialize` вызывайте методы через `Ailet.getClient()`.
+
+Чтобы экран камеры JEDAI не закрывался сразу после открытия, когда разрешение на камеру уже выдано, добавьте в `features`:
 
 ```kotlin
 DefaultAiletPermissionsFeature(
@@ -163,230 +197,229 @@ DefaultAiletPermissionsFeature(
 )
 ```
 
-### 1.2.2. Использование
-После инициализации вам становится доступен единый клиент библиотеки ``AiletClient``, который вы можете использовать для вызова ее методов:
+## Как вызывать методы
+
+Вызов метода возвращает `AiletCall`. Дальше выполните его асинхронно через `execute()` или синхронно через `executeBlocking()`.
+
+Асинхронный вызов:
+
 ```kotlin
 Ailet.getClient()
+    .setPortal(portalName)
+    .execute({ result ->
+        when (result) {
+            // обработка результата
+        }
+    }, { throwable ->
+        // обработка ошибки
+    })
 ```
 
-## 1.3 Методы
-> **ВНИМАНИЕ!** В Java для методов не применяются значения по умолчанию, по этому необходимо заполнять все поля.
+Синхронный вызов. Поток исполнения выбираете вы:
 
-Начиная с версии 3.0 класс-клиент библиотеки ``IntRtl`` отмечен как устаревший. 
-Вместо него необходимо использовать экземпляр ``AiletClient``.
-Методы нового клиента концептуально соответствуют
-[методам устаревшего клиента](https://github.com/intrtl/AiletLibraryExamples/blob/master/Android/IrLibExample/readme.md#методы):
+```kotlin
+val result = Ailet.getClient()
+    .setPortal(portalName)
+    .executeBlocking()
+```
 
-Метод  | Описание
---- | ---
-[init](#132-инициализация-библиотеки-метод-init) | Инициализация библиотеки, авторизация пользователя и загрузка справочников.
-[getServers](#131-список-доступных-серверов-метод-getservers) | Получение списка доступных порталов.
-[start](#133-начало-визита-метод-start) | Старт визита.
-[getReports](#134-получение-отчета-по-визиту-метод-getreports) | Возвращает отчет по указанному визиту.
-[showSummaryReport](#135-отображение-сводного-отчета-по-визиту-метод-showsummaryreport) | Сводный отчет по указанному визиту.
-[setPortal](#136-выбор-активного-портала-метод-setportal) | Установка активного портала.
-[requestSyncCatalogs](#137-загрузка-справочников-метод-requestsynccatalogs) | Загрузка справочников.
-[syncPalomna](#1312-синхронизация-моделей-on-device-метод-syncpalomna) | Загрузка моделей и справочников для on-device распознавания (версия с Palomna).
+В Java у параметров нет значений по умолчанию. Передайте все аргументы явно:
 
-Для удобства перехода на новый клиент, в аннотацию Deprecated каждого метода ``IntRtl`` добавлены блоки ``ReplaceWith``, позволяющие автоматически заменить старый метод на новый с помощью подсказок Android Studio.
+```java
+Ailet.getClient().init(
+    "login",
+    "password",
+    null,
+    false,
+    null,
+    false
+).execute(
+    result -> {
+        // обработка результата
+        return null;
+    },
+    throwable -> {
+        // обработка ошибки
+        return null;
+    },
+    () -> {
+        // завершение вызова
+        return null;
+    }
+);
+```
 
-Тем не менее, между старым и новым клиентами есть несколько существенных отличий:
+## On-device распознавание (Palomna)
 
-1. Методы клиента теперь не являются блокирующими. Вызов каждого из них возвращает объект ``AiletCall``, который, в свою очередь, можно выполнить либо синхронно с помощью метода ``executeBlocking()``, либо асинхронно с помощью метода ``execute()``.
+Часть сборок JEDAI умеет распознавать фото на устройстве. Если в вашей сборке этого нет, пропускайте пометки «версия с Palomna».
 
-    До версии 3.0.0:
+Чтобы заранее загрузить модели, классы и справочники, вызовите [`syncPalomna()`](#syncpalomna).
 
-    ```kotlin
-    client.setPortal(portalName)
-    ```
+## Справочник методов
 
-    Начиная с версии 3.0.0:
+| Метод | Что делает |
+| --- | --- |
+| [`init`](#init) | Авторизует пользователя, поднимает библиотеку и загружает справочники |
+| [`getServers`](#getservers) | Возвращает список доступных порталов |
+| [`start`](#start) | Запускает съемку визита |
+| [`getReports`](#getreports) | Возвращает отчет по визиту |
+| [`showSummaryReport`](#showsummaryreport) | Открывает сводный отчет по визиту |
+| [`setPortal`](#setportal) | Устанавливает активный портал |
+| [`requestSyncCatalogs`](#requestsynccatalogs) | Загружает справочники |
+| [`showVisit`](#showvisit) | Открывает фотографии визита |
+| [`finishVisit`](#finishvisit) | Завершает визит |
+| [`logout`](#logout) | Выходит из учетной записи |
+| [`getTotalSyncStat`](#gettotalsyncstat) | Возвращает статистику синхронизации визитов |
+| [`syncPalomna`](#syncpalomna) | Загружает модели и справочники для on-device распознавания |
 
-    ```kotlin
-    Ailet.getClient()
-            .setPortal(portalName)
-            .execute({ result -> 
-                when(result) {
-                    // обработка результата
-                }
-            }, { throwable -> 
-                // обработка ошибки
-            })
-    ```
-2. Блокирующее выполнение методов также возможно, но в этом случае ответственность за выбор правильного потока исполнения ложится на пользователя библиотеки.
+Чтобы [мигрировать с `IntRtl`](#миграция-с-intrtl), используйте `AiletClient`.
 
-    ```kotlin
-    val result = Ailet.getClient()
-            .setPortal(portalName)
-            .executeBlocking()
-    ```
+### getServers()
 
-3. Пример вызова на Java
-   
-   ```java
-    Ailet.getClient().init(
-        "login",
-        "password",
-        null,
-        false,
-        null,
-        false
-    ).execute(
-        result -> {
-            return null;
-        },
-        throwable -> {
-            return null;
-        },
-        () -> {
-            return null;
-        }
-    );
-   ```
-### 1.3.1 Список доступных серверов. Метод getServers()
+`getServers()` возвращает список серверов `AiletServer`. Вызывайте его только в мультипортальном режиме. Затем передайте выбранный сервер в `init()`.
 
-Метод отдаем список серверов (AiletServer), которые можно использовать в методы init. Метод необзательный и необходим только для мультипортального режима.
-
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:---------:|:-----------------:
-login           |String      | Логин пользователя в системе Ailet.      | + | 
-password        |String      | Пароль пользователя в системе Ailet.     | + | 
-externalUserId  |String      | Внешний идентификатор пользователя (ID пользователя из внешней системы). | | null 
-
-**Ошибки**
-Ошибка  | Описание 
----------|----------
-BackendApiException | Ошибка сервера с [HTTP кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
-
-### 1.3.2 Инициализация библиотеки. Метод init()
-
-Данный метод отвечает за авторизацию пользователя в библиотеке, а также за инициализацию самой библиотеки Ailet Lib и загрузку справочников, необходимых для работы модуля.
-
-При необходимости может быть использован для запуска сервиса синхронизации.
-
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:---------:|:-----------------:
-login           |String      | Логин пользователя в системе Ailet.      | + | 
-password        |String      | Пароль пользователя в системе Ailet.     | + | 
-externalUserId  |String      | Внешний идентификатор пользователя (ID пользователя из внешней системы). | | null 
-multiPortalMode |Boolean     | Поддержка мультипортальности.            | | true 
-server          |AiletServer | Сервер, на который выполняется вход.     | | null 
-isNeedSyncCatalogs|Boolean | Необходимость синхронизации каталогов.     | | true
-
-**Ошибки**
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-DataInconsistencyException | Current auth state data is null | Данные аутенитификации не корректны
-IllegalStateException | Inconsistency! server is null | Сервер пустой
-IllegalStateException | No portals available | Нет доступных порталов
-BackendApiException | | Ошибка сервера с [HTTP кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
-Другие типы исключений | | Внутренняя ошибка библиотеки, необходимо обращение в поддержку 
-
-
-### 1.3.3 Начало визита. Метод start()
-
-Метод запускает съемку в рамках визита. 
-
-> **On-device (версия с Palomna):** Если модели и классы для on-device распознавания загружены, то при отсутствии интернета фотографии будут обработаны локально на устройстве.
-
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:-:|---
-storeId         |AiletMethodStart.StoreId      | Внешний идентификатор торговой точки.        | + | 
-externalVisitId |String      | Внешний идентификатор визита.     |  | null
-sceneGroupId    |Int         | Идентификатор группы сцен.            | | null 
-taskId       |String      | Внешний идентификатор задачи.         | | null 
-visitType       |String      | Тип визита (before, after).         | | null 
-visitUuid       |String      | Внутренний ИД визита.         | | null 
-retailTaskIterationUuid       |String      | ИД итерации (ритейл).         | | null 
-retailTaskId       |String      | ИД задачи (ритейл).         | | null 
-retailTaskActionId       |String      | ИД экшена (ритейл).         | | null 
-retailTaskActionId       |String      | ИД экшена (ритейл).         | | null 
-sceneTypes | List | Список типов сцен | | listOf()
-launchConfig | LaunchConfig | Конфигурация запуска | | AiletMethodStart.LaunchConfig()
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `login` | `String` | Да | — | Логин пользователя в JEDAI |
+| `password` | `String` | Да | — | Пароль пользователя в JEDAI |
+| `externalUserId` | `String` | Нет | `null` | Внешний идентификатор пользователя |
 
 **Ошибки**
 
-Ошибка  | Текст ошибки | Описание
----------|---------- | ----
-Throwable | Uneditable(historical) visit | Завершенный визит (не редактируемый)
-IllegalStateException | Inconsistent AiletClient state: (Unknown, Warning, Error) | Ошибка несогласования (с кодом)
-Throwable | Unauthorized | Не авторизован
+| Ошибка | Описание |
+| --- | --- |
+| `BackendApiException` | Ошибка сервера с [HTTP-кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) |
 
-### 1.3.4 Получение отчета по визиту. Метод getReports()
+### init()
 
-Метод возвращает отчет по визиту в формате `json` ([Пример](#15-пример-отчета))
+`init()` авторизует пользователя, поднимает библиотеку и загружает справочники. При необходимости запускает сервис синхронизации.
 
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:-:|:-:
-externalVisitId | String | Внешний идентификатор визита. | +  
-taskId       |String      | Внешний идентификатор задачи.         | | null 
-visitType       |String      | Тип визита (before, after).         | | null 
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `login` | `String` | Да | — | Логин пользователя в JEDAI |
+| `password` | `String` | Да | — | Пароль пользователя в JEDAI |
+| `externalUserId` | `String` | Нет | `null` | Внешний идентификатор пользователя |
+| `multiPortalMode` | `Boolean` | Нет | `true` | Включить мультипортальный режим |
+| `server` | `AiletServer` | Нет | `null` | Сервер, на который выполняется вход |
+| `isNeedSyncCatalogs` | `Boolean` | Нет | `true` | Синхронизировать каталоги при входе |
 
 **Ошибки**
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-AiletException | Visit with externalId [externalId] is not found | Визит в идентификатором не найден
-OnDeviceNotAvailableException | On-device recognition not available | **(версия с Palomna)** On-device распознавание недоступно (при отсутствии сети и незагруженных моделях)
 
-> **On-device (для версии с Palomna):** В результат отчета (поле `result` и `report.result`) добавляются поля:
-> - `source`: `"online"` (все фото распознаны на сервере) или `"on-device"` (хотя бы одно фото распознано только локально).
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `DataInconsistencyException` | `Current auth state data is null` | Данные аутентификации некорректны |
+| `IllegalStateException` | `Inconsistency! server is null` | Сервер пустой |
+| `IllegalStateException` | `No portals available` | Нет доступных порталов |
+| `BackendApiException` | — | Ошибка сервера с [HTTP-кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) |
+| Другие типы исключений | — | Внутренняя ошибка библиотеки. Обратитесь в поддержку |
+
+### start()
+
+`start()` запускает съемку в рамках визита.
+
+> **On-device (версия с Palomna):** если модели и классы загружены, при отсутствии интернета фото обрабатываются на устройстве.
+
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `storeId` | `AiletMethodStart.StoreId` | Да | — | Внешний идентификатор торговой точки |
+| `externalVisitId` | `String` | Нет | `null` | Внешний идентификатор визита |
+| `sceneGroupId` | `Int` | Нет | `null` | Идентификатор группы сцен |
+| `taskId` | `String` | Нет | `null` | Внешний идентификатор задачи |
+| `visitType` | `String` | Нет | `null` | Тип визита (`before`, `after`) |
+| `visitUuid` | `String` | Нет | `null` | Внутренний идентификатор визита |
+| `retailTaskIterationUuid` | `String` | Нет | `null` | Идентификатор итерации (ритейл) |
+| `retailTaskId` | `String` | Нет | `null` | Идентификатор задачи (ритейл) |
+| `retailTaskActionId` | `String` | Нет | `null` | Идентификатор действия (ритейл) |
+| `sceneTypes` | `List` | Нет | `listOf()` | Список типов сцен |
+| `launchConfig` | `LaunchConfig` | Нет | `AiletMethodStart.LaunchConfig()` | Конфигурация запуска |
+
+**Ошибки**
+
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Uneditable(historical) visit` | Визит завершен и недоступен для редактирования |
+| `IllegalStateException` | `Inconsistent AiletClient state: (Unknown, Warning, Error)` | Несогласованное состояние клиента |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+
+### getReports()
+
+`getReports()` возвращает отчет по визиту в JSON. Изучите [формат отчета](#пример-отчета).
+
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `externalVisitId` | `String` | Да | — | Внешний идентификатор визита |
+| `taskId` | `String` | Нет | `null` | Внешний идентификатор задачи |
+| `visitType` | `String` | Нет | `null` | Тип визита (`before`, `after`) |
+
+**Ошибки**
+
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `AiletException` | `Visit with externalId [externalId] is not found` | Визит с таким идентификатором не найден |
+| `OnDeviceNotAvailableException` | `On-device recognition not available` | **(версия с Palomna)** On-device распознавание недоступно: нет сети и модели не загружены |
+
+> **On-device (версия с Palomna):** в поля `result` и `report.result` добавляются:
+> - `source`: `"online"`, если все фото распознаны на сервере, или `"on-device"`, если хотя бы одно фото распознано только локально;
 > - `completed_on_device`: количество фото, распознанных on-device.
 
-### 1.3.5 Отображение сводного отчета по визиту. Метод showSummaryReport()
+### showSummaryReport()
 
-Метод открывает экран просмотра сводного отчета по визиту. 
+`showSummaryReport()` открывает экран сводного отчета по визиту.
 
-> **On-device (версия с Palomna):** Поддерживает отображение данных, полученных в ходе on-device распознавания.
+> **On-device (версия с Palomna):** экран показывает данные on-device распознавания.
 
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:-:|:-:
-externalVisitId | String | Внешний идентификатор визита. | +  
-taskId       |String      | Внешний идентификатор задачи.         | | null 
-visitType       |String      | Тип визита (before, after).         | | null
-
-**Ошибки**
-Ошибка  | Описание  
----------|----------
-Throwable | Unauthorized4 
-IllegalArgumentException | No store for externalId [externalId]
-IllegalArgumentException | No store for storeId [storeId]
-IllegalArgumentException | No visit for summary report request $param found
-IllegalArgumentException | Incorrect historical visit params
-BackendApiException | | Ошибка сервера с [HTTP кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
-RuntimeException | No visit/Offline
-
-### 1.3.6 Выбор активного портала. Метод setPortal()
-
-Метод используется для установки текущего портала в мультипортальном режиме. 
-
-> **On-device (версия с Palomna):** При переключении портала также сохраняются и применяются настройки on-device распознавания для конкретного портала. Для использования on-deive распознавания необходимо выполнить `syncPalomna()` после переключения портала (если ранее для этого портала не было выполнено).
-
-Параметр | Тип | Описание | Обязательный 
----------|-----|----------|:-:
-portalName | String | Идентификатор портала | + 
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `externalVisitId` | `String` | Да | — | Внешний идентификатор визита |
+| `taskId` | `String` | Нет | `null` | Внешний идентификатор задачи |
+| `visitType` | `String` | Нет | `null` | Тип визита (`before`, `after`) |
 
 **Ошибки**
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-Throwable | Unauthorized | Не авторизован
-IllegalArgumentException | No [server] found in local portals list | Не найден сервер в списке 
-AiletException | no [server] in servers list | Нет сервера в списке 
 
-### 1.3.7 Загрузка справочников. Метод requestSyncCatalogs()
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+| `IllegalArgumentException` | `No store for externalId [externalId]` | Нет торговой точки с таким внешним идентификатором |
+| `IllegalArgumentException` | `No store for storeId [storeId]` | Нет торговой точки с таким идентификатором |
+| `IllegalArgumentException` | `No visit for summary report request $param found` | Визит для сводного отчета не найден |
+| `IllegalArgumentException` | `Incorrect historical visit params` | Некорректные параметры завершенного визита |
+| `BackendApiException` | — | Ошибка сервера с [HTTP-кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) |
+| `RuntimeException` | `No visit/Offline` | Нет визита, устройство офлайн |
 
-Метод нужен для загрузки справочника выбранного портала в мультипортальном режиме.
+### setPortal()
 
-Параметр | Тип | Описание | По умолчанию
----------|-----|----------|:-:
-syncMode | AiletMethodSyncCatalogs.SyncMode | AiletMethodSyncCatalogs.SyncMode.EAGER - загрузка все справочников</br>AiletMethodSyncCatalogs.SyncMode.SOFT - загрузка только обязательных справочников | AiletMethodSyncCatalogs.SyncMode.EAGER
-strategy | AiletMethodSyncCatalogs.Strategy | AiletMethodSyncCatalogs.Strategy.Schedule - поставить загрузку справочников в очередь </br>AiletMethodSyncCatalogs.Strategy.SyncRightNow - синхронизировать немедленно | AiletMethodSyncCatalogs.Strategy.Schedule
+`setPortal()` устанавливает текущий портал в мультипортальном режиме.
+
+> **On-device (версия с Palomna):** при переключении портала сохраняются и применяются настройки on-device распознавания для этого портала. После переключения вызовите `syncPalomna()`, если для портала еще не загружали модели.
+
+| Параметр | Тип | Обязательный | Описание |
+| --- | --- | --- | --- |
+| `portalName` | `String` | Да | Идентификатор портала |
 
 **Ошибки**
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-Throwable | Unauthorized | Не авторизован
 
-#### Пример загрузки справочников в мультипортальном режиме
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+| `IllegalArgumentException` | `No [server] found in local portals list` | Сервер не найден в локальном списке порталов |
+| `AiletException` | `no [server] in servers list` | Сервера нет в списке |
+
+### requestSyncCatalogs()
+
+`requestSyncCatalogs()` загружает справочники выбранного портала в мультипортальном режиме.
+
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `syncMode` | `AiletMethodSyncCatalogs.SyncMode` | Нет | `AiletMethodSyncCatalogs.SyncMode.EAGER` | `EAGER` — все справочники. `SOFT` — только обязательные |
+| `strategy` | `AiletMethodSyncCatalogs.Strategy` | Нет | `AiletMethodSyncCatalogs.Strategy.Schedule` | `Schedule` — поставить загрузку в очередь. `SyncRightNow` — синхронизировать сразу |
+
+**Ошибки**
+
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+
+Чтобы загрузить справочники для всех порталов:
 
 ```kotlin
 Ailet.getClient()
@@ -397,71 +430,75 @@ Ailet.getClient()
     )
     .execute({ result ->
         runBlocking {
-            async(Dispatchers.Default) {
-                result.servers.forEach { server ->
-                    Ailet.getClient().setPortal(
-                        portalName = server.name
-                    ).executeBlocking()
-                    
-                    Ailet.getClient().requestSyncCatalogs(
-                        syncMode = AiletMethodSyncCatalogs.SyncMode.EAGER,
-                        strategy = AiletMethodSyncCatalogs.Strategy.SyncRightNow
-                    ).executeBlocking()
-                }
-            }.await()
-            
-            //Действия выполняемые после загрузки всех справочников
-    }, { })
+            result.servers.forEach { server ->
+                Ailet.getClient().setPortal(
+                    portalName = server.name
+                ).executeBlocking()
+
+                Ailet.getClient().requestSyncCatalogs(
+                    syncMode = AiletMethodSyncCatalogs.SyncMode.EAGER,
+                    strategy = AiletMethodSyncCatalogs.Strategy.SyncRightNow
+                ).executeBlocking()
+            }
+        }
+        // действия после загрузки всех справочников
+    }, { throwable ->
+        // обработка ошибки
+    })
 ```
 
-### 1.3.8 Отображение визита. Метод showVisit()
+### showVisit()
 
-Метод открывает экран просмотра фотографий визита. Открывается первая фотография в визите.
+`showVisit()` открывает экран фотографий визита. Открывается первая фотография.
 
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:-:|:-:
-externalVisitId | String | Внешний идентификатор визита. | +  
-taskId       |String      | Внешний идентификатор задачи.         | | null 
-visitType       |String      | Тип визита (before, after).         | | null 
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `externalVisitId` | `String` | Да | — | Внешний идентификатор визита |
+| `taskId` | `String` | Нет | `null` | Внешний идентификатор задачи |
+| `visitType` | `String` | Нет | `null` | Тип визита (`before`, `after`) |
 
-Ошибки
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-Throwable | Unauthorized | Не авторизован
-IllegalArgumentException | No visit with id: [visitId] | Нет визита
-IndexOutOfBoundsException | No photos in visit with id: [$visitId] | Визит пустой
-RuntimeException | No visit/Offline | Нет локальноного визита и устройство оффлайн (невозможно проверить есть ли визит на сервере)
-BackendApiException | | Ошибка сервера с [HTTP кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
+**Ошибки**
 
-### 1.3.9 Завершение визита. Метод finishVisit()
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+| `IllegalArgumentException` | `No visit with id: [visitId]` | Визит не найден |
+| `IndexOutOfBoundsException` | `No photos in visit with id: [$visitId]` | В визите нет фото |
+| `RuntimeException` | `No visit/Offline` | Нет локального визита, устройство офлайн. Проверить визит на сервере нельзя |
+| `BackendApiException` | — | Ошибка сервера с [HTTP-кодом](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) |
 
-Метод закрывает визит, после этого он доступен только для просмотра.
+### finishVisit()
 
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:-:|:-:
-externalVisitId | String | Внешний идентификатор визита. | +  
+`finishVisit()` закрывает визит. После этого визит доступен только для просмотра.
 
-Ошибки
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-Throwable | Unauthorized | Не авторизован
-AiletException | Visit with externalId [externalVisitId] is already finished | Визит завершен
-AiletException | Visit with externalId [externalVisitId] is not found | Визит не найден
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `externalVisitId` | `String` | Да | — | Внешний идентификатор визита |
 
-### 1.3.10 Выход пользователя. Метод logout()
+**Ошибки**
 
-Метод реализует выход пользователя, при этом будут очищенны только служебные данные. 
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+| `AiletException` | `Visit with externalId [externalVisitId] is already finished` | Визит уже завершен |
+| `AiletException` | `Visit with externalId [externalVisitId] is not found` | Визит не найден |
 
-> **On-device (версия с Palomna):** Если в мобильных настройках включено on-device распознавание, будут также удалены загруженные модели, классы и справочники (только если после `logout` в `init` будет передан новый пользователь).
+### logout()
 
-### 1.3.11 Статистика синхронизации визитов. Метод getTotalSyncStat()
-> Версия библиотеки: 4.17.3 и выше (новые поля доступны в версии с Palomna)
+`logout()` выходит из учетной записи и очищает служебные данные.
 
-Метод возвращает информацию по статистике фотографий и запускает сервис синхронизации, если он остановлен. Результатом работы метода является строка в формате json.
+> **On-device (версия с Palomna):** если on-device распознавание включено в мобильных настройках, библиотека удалит загруженные модели, классы и справочники. Это произойдет только если следующий `init()` вызовется для другого пользователя.
 
-> **On-device (версия с Palomna):** В каждый элемент `items` и в `total_stat` добавляется поле `source` ("online"/"on-device") и `completed_on_device`.
+### getTotalSyncStat()
+
+Доступно в версии 4.17.3 и выше. Новые поля `source` и `completed_on_device` есть в сборке с Palomna.
+
+`getTotalSyncStat()` возвращает статистику по фотографиям и запускает сервис синхронизации, если он остановлен. Результат — JSON-строка.
+
+> **On-device (версия с Palomna):** в каждый элемент `items` и в `total_stat` добавляются поля `source` (`online` / `on-device`) и `completed_on_device`.
 
 **Пример ответа**
+
 ```json
 {
     "items": [
@@ -500,57 +537,57 @@ AiletException | Visit with externalId [externalVisitId] is not found | Визи
 }
 ```
 
-### 1.3.12 Синхронизация моделей On-device. Метод syncPalomna()
-> **On-device (версия с Palomna):** 
+### syncPalomna()
 
-Метод предназначен для предварительной загрузки и обновления моделей, классов и справочников, необходимых для распознавания на устройстве без интернета.
+`syncPalomna()` заранее загружает и обновляет модели, классы и справочники для распознавания на устройстве без интернета.
 
-Параметр | Тип | Описание | Обязательный | По умолчанию
----------|-----|----------|:---------:|:-----------------:
-externalIds | List<String> | Массив внешних идентификаторов ТТ | | listOf()
-storeIds | List<Int> | Массив внутренних (библиотеки) идентификаторов ТТ | | listOf()
-useMobile | Boolean | Разрешить синхронизацию через мобильную сеть | | false
-isAutoUpdate | Boolean | Автоматическое обновление моделей без запроса пользователя | | false
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `externalIds` | `List<String>` | Нет | `listOf()` | Внешние идентификаторы торговых точек |
+| `storeIds` | `List<Int>` | Нет | `listOf()` | Внутренние идентификаторы торговых точек в библиотеке |
+| `useMobile` | `Boolean` | Нет | `false` | Разрешить синхронизацию через мобильную сеть |
+| `isAutoUpdate` | `Boolean` | Нет | `false` | Обновлять модели без запроса пользователя |
 
 **Ошибки**
-Ошибка  | Текст ошибки | Описание
----------|----------|----------
-OnDeviceNotAvailableException | On-device not available | On-device распознавание недоступно (выключено в настройках)
-OnDeviceDownloadMobileException | Cant download via mobile network | Запрещена загрузка через мобильную сеть (useMobile = false)
-OnDeviceNoStoreException | Store not found |  Не найдена торговая точка 
-Throwable | Unauthorized | Не авторизован
 
-#### 1.3.12.1 Широковещательное (broadcast) сообщение 
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `OnDeviceNotAvailableException` | `On-device not available` | On-device распознавание выключено в настройках |
+| `OnDeviceDownloadMobileException` | `Cant download via mobile network` | Загрузка через мобильную сеть запрещена (`useMobile = false`) |
+| `OnDeviceNoStoreException` | `Store not found` | Торговая точка не найдена |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
 
-При изменении статуса загрузки Palomna библиотека генерирует широковещательное сообщение с ```intent.action = SYNC_PALOMNA_STATE```.
+При изменении статуса загрузки Palomna библиотека отправляет широковещательное сообщение (broadcast) с `intent.action = SYNC_PALOMNA_STATE`.
 
-#### Extras
-Extra  | Описание
----------|----------
-dataSetsProgress | прогресс загрузки моделей 
-matricesProgress | прогресс загрузки матриц
-matricesTypesProgress | прогресс загрузки типов матриц
-metricsProgress |  прогресс загрузки метрик
-imagesProgress |  прогресс загрузки изображений
+| Extra | Описание |
+| --- | --- |
+| `dataSetsProgress` | Прогресс загрузки моделей |
+| `matricesProgress` | Прогресс загрузки матриц |
+| `matricesTypesProgress` | Прогресс загрузки типов матриц |
+| `metricsProgress` | Прогресс загрузки метрик |
+| `imagesProgress` | Прогресс загрузки изображений |
 
-## 1.4 Широковещательное (broadcast) сообщение 
+## Широковещательное сообщение
 
-При получении всех данных по визту библиотека Ailet генерирует широковещательное сообщение с ```intent.action = com.ailet.app.BROADCAST_WIDGETS_RECEIVED``` (либо ```com.ailet.russia.BROADCAST_WIDGETS_RECEIVED```).
+Когда библиотека получит все данные по визиту, она отправит broadcast с `intent.action = com.ailet.app.BROADCAST_WIDGETS_RECEIVED` или `com.ailet.russia.BROADCAST_WIDGETS_RECEIVED`.
 
-**Пример обработки сообщения**
+На Android 13 и новее укажите флаг экспорта: сообщение приходит из библиотеки как отдельный компонент.
+
+Чтобы обработать сообщение:
 
 ```kotlin
 broadcastReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        parseBroadcaseMesasge(intent)
+        parseBroadcastMessage(intent)
     }
 }
 
-registerReceiver(
-    broadcastReceiver,
-    IntentFilter(IR_BROADCAST_V3)
-)
-...
+val intentFilter = IntentFilter(IR_BROADCAST_V3)
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    registerReceiver(broadcastReceiver, intentFilter, Context.RECEIVER_EXPORTED)
+} else {
+    registerReceiver(broadcastReceiver, intentFilter)
+}
 
 private const val NOT_SET = "not set"
 private const val VISIT_ID = "visit_id"
@@ -563,10 +600,10 @@ private const val COMPLETED_ON_DEVICE = "completed_on_device"
 private const val SOURCE = "source"
 private const val RESULT = "result"
 
-private fun parseBroadcaseMesasge(intent: Intent) {
+private fun parseBroadcastMessage(intent: Intent) {
     val extras = intent.extras
-    val visitId = extras?.getString(VISIT_ID, NOT_SET)    
-    val internalVisitId = extras?.getString(INTERNAL_VISIT_ID, NOT_SET)    
+    val visitId = extras?.getString(VISIT_ID, NOT_SET)
+    val internalVisitId = extras?.getString(INTERNAL_VISIT_ID, NOT_SET)
     val storeId = extras?.getString(STORE_ID, NOT_SET)
     val taskId = extras?.getString(TASK_ID, NOT_SET)
     val totalPhotos = extras?.getInt(TOTAL_PHOTOS, 0)
@@ -581,434 +618,63 @@ private fun parseBroadcaseMesasge(intent: Intent) {
         } catch (t: Throwable) {
             t.printStackTrace()
         }
-    }    
-}
-```
-
-**Intent extras**
-
-Параметр | Тип | Описание 
----------|-----|----------
-internal_visit_id           |String      | Внутренний (Ailet) ИД визита
-visit_id           |String      | ИД визита
-store_id           |String      | ИД торговой точки
-user_id           |String      | ИД пользователя (Ailet)
-total_photos           |Int      | Количество фото в визите
-completed_photos           |Int      | Количество обработанных фото
-completed_on_device        |Int      | **(версия с Palomna)** Количество фото, распознанных on-device
-source                     |String   | **(версия с Palomna)** Источник данных (online/on-device)
-result                     |String   | Uri файла отчета
-
-## 1.7 Известные проблемы и их устранение
-
-### 1.7.1 Gradle 8.x и обсфукация
-
-Необходимо в файл `proguard-rules.pro` добавить:
-
-```gradle
--keep class com.ailet.** { *; }
--keep class com.ailet.lib3.** { *; }
--keep class com.google.gson.** { *; }
--dontwarn com.ailet.lib3.**
-```
-
-## 1.6 Пример отчета
-
-```json
-{
-    "photosCounter": 0,
-    "scenesCounter": 0,
-    "notDetectedPhotosCounter": 0,
-    "notDetectedScenesCounter": 0,
-    "store_id": "1",
-    "user_id": "26950",
-    "external_user_id": "1",
-    "install_id": "GEH3Z5CP",
-    "local_visit_id": "4d18faba141e8-80c51538",
-    "internal_visit_id": "4d18faba141e8-80c51538",
-    "visit_id": "qqq",
-    "status": "RESULT_EMPTY",
-    "result": {
-        "source": "on-device",
-        "visit_id": "2",
-        "total_photos": 4,
-        "sended_photos": 0,
-        "code": "RESULT_OK",
-        "codeInt": 1,
-        "message": "Успешно обработан"
-    },
-    "photos": {
-        "e4ef7672014924-def3dccc-PHOTO-000001": {
-            "error": {
-                "code": "RESULT_OK",
-                "codeInt": 1,
-                "message": "Успешно обработан"
-            },
-            "products": [
-                {
-                    "product_id": "00fc4c31-a332-4a6b-b219-6dceb80e245d",
-                    "facing": 1,
-                    "facing_group": 1,
-                    "price": 0,
-                    "price_type": 0,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Домик в деревне Сливки пит.стер.20%, Тетра, .480"
-                },
-                {
-                    "product_id": "147f7d0e-35c3-4edb-aba1-e31084406494",
-                    "facing": 4,
-                    "facing_group": 0,
-                    "price": 14.99,
-                    "price_type": 1,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Ermigurt Пудинг ШОКОЛАДНЫЙ 3,2%, Стакан, .100"
-                }
-            ],
-            "scene_type": "Теплая полка",
-            "scene_id": "e4ef7672014924-def3dccc-SCENE-000001",
-            "image_path": "/data/user/0/com.intrtl.lib2test/files/files/1/19/19f/19f2/19f2e/19f2e39d0991e36585bad2ea58ee0e0f.jpg",
-            "image_url": "https://dairy-demo.intrtl.com/api/photo_raw/2023/01/17/e4ef7672014924-def3dccc/2023-01-17-15-44-30-2885-o.jpg",
-            "task_id": "67"
-        },
-        "e4ef7672014924-def3dccc-PHOTO-000002": {
-            "error": {
-                "code": "RESULT_OK",
-                "codeInt": 1,
-                "message": "Успешно обработан"
-            },
-            "products": [
-                {
-                    "product_id": "00fc4c31-a332-4a6b-b219-6dceb80e245d",
-                    "facing": 2,
-                    "facing_group": 2,
-                    "price": 0,
-                    "price_type": 0,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Домик в деревне Сливки пит.стер.20%, Тетра, .480"
-                },
-                {
-                    "product_id": "147f7d0e-35c3-4edb-aba1-e31084406494",
-                    "facing": 6,
-                    "facing_group": 2,
-                    "price": 14.99,
-                    "price_type": 1,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Ermigurt Пудинг ШОКОЛАДНЫЙ 3,2%, Стакан, .100"
-                }
-            ],
-            "scene_type": "Холодная полка ",
-            "scene_id": "e4ef7672014924-def3dccc-SCENE-000002",
-            "image_path": "/data/user/0/com.intrtl.lib2test/files/files/4/4c/4c9/4c9d/4c9d1/4c9d1afd71269a5e08791f963938e5f3.jpg",
-            "image_url": "https://dairy-demo.intrtl.com/api/photo_raw/2023/01/17/e4ef7672014924-def3dccc/2023-01-17-15-44-47-4064-o.jpg",
-            "task_id": "67"
-        },
-        "e4ef7672014924-def3dccc-PHOTO-000004": {
-            "error": {
-                "code": "RESULT_OK",
-                "codeInt": 1,
-                "message": "Успешно обработан"
-            },
-            "products": [
-                {
-                    "product_id": "6156f4da52105-4578",
-                    "facing": 1,
-                    "facing_group": 0,
-                    "price": 59.9,
-                    "price_type": 1,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Fruttis Продукт йогуртный 8% Вишн. плом/Груша-Ваниль, формованный стакан, .115"
-                },
-                {
-                    "product_id": "6156f545c20df-5885",
-                    "facing": 1,
-                    "facing_group": 1,
-                    "price": 28.99,
-                    "price_type": 0,
-                    "category_id": "5e5236ee77ac4-7319",
-                    "name": "Fruttis Продукт йогуртный 8% Абрикос-Манго/Лес. ягоды, формованный стакан, .115"
-                }
-            ],
-            "scene_type": "Холодная полка ",
-            "scene_id": "e4ef7672014924-def3dccc-SCENE-000002",
-            "image_path": "/data/user/0/com.intrtl.lib2test/files/files/7/76/767/767c/767c3/767c32d09dc3617bb1c049378ccdb7b7.jpg",
-            "image_url": "https://dairy-demo.intrtl.com/api/photo_raw/2023/01/17/e4ef7672014924-def3dccc/2023-01-17-16-37-46-9543-o.jpg",
-            "task_id": "67"
-        },
-        "e4ef7672014924-def3dccc-PHOTO-000005": {
-            "error": {
-                "code": "RESULT_OK",
-                "codeInt": 1,
-                "message": "Успешно обработан"
-            },
-            "products": [],
-            "scene_type": "Холодная полка ",
-            "scene_id": "e4ef7672014924-def3dccc-SCENE-000002",
-            "image_path": "/data/user/0/com.intrtl.lib2test/files/files/7/7d/7da/7da2/7da27/7da27907aa428fbe3979764876eec411.jpg",
-            "image_url": "https://dairy-demo.intrtl.com/api/photo_raw/2023/01/17/e4ef7672014924-def3dccc/2023-01-17-16-44-31-8028-o.jpg",
-            "task_id": "67"
-        }
-    },
-    "assortment_achievement": [
-        {
-            "brand_id": "de548597-55c3-49bf-8d17-9a29c86929b1",
-            "brand_name": "Actimel",
-            "id": "7e132a93-703d-11e7-a5c2-000d3a250e47",
-            "facing_fact": 0,
-            "facing_plan": 1,
-            "facing_real": 0,
-            "price": 0,
-            "price_type": 0,
-            "name": "Actimel Вишня-черешня-имбирь упак, картонная коробка (десерты), .600",
-            "product_category_id": "5e5236ee77ac4-7319",
-            "category_name": "OTHER_H"
-        },
-        {
-            "brand_id": "de548597-55c3-49bf-8d17-9a29c86929b1",
-            "brand_name": "Actimel",
-            "id": "6796ad60-50e9-465b-ae6c-3a31a15f3d19",
-            "facing_fact": 0,
-            "facing_plan": 1,
-            "facing_real": 0,
-            "price": 0,
-            "price_type": 0,
-            "name": "Actimel Вишня-черешня-имбирь, Бутылка, .100",
-            "product_category_id": "5e5236ee77ac4-7319",
-            "category_name": "OTHER_H"
-        }
-    ],
-    "assortment_achievement_by_metrics": [
-        {
-            "products": [
-                {
-                    "brand_id": "de548597-55c3-49bf-8d17-9a29c86929b1",
-                    "brand_name": "Actimel",
-                    "id": "7e132a93-703d-11e7-a5c2-000d3a250e47",
-                    "facing_fact": 0,
-                    "facing_plan": 1,
-                    "facing_real": 0,
-                    "price": 0,
-                    "price_type": 0,
-                    "name": "Actimel Вишня-черешня-имбирь упак, картонная коробка (десерты), .600",
-                    "product_category_id": "5e5236ee77ac4-7319",
-                    "category_name": "OTHER_H"
-                },
-                {
-                    "brand_id": "de548597-55c3-49bf-8d17-9a29c86929b1",
-                    "brand_name": "Actimel",
-                    "id": "6796ad60-50e9-465b-ae6c-3a31a15f3d19",
-                    "facing_fact": 0,
-                    "facing_plan": 1,
-                    "facing_real": 0,
-                    "price": 0,
-                    "price_type": 0,
-                    "name": "Actimel Вишня-черешня-имбирь, Бутылка, .100",
-                    "product_category_id": "5e5236ee77ac4-7319",
-                    "category_name": "OTHER_H"
-                }
-            ],
-            "assortment_achievement_name": "General"
-        }
-    ],
-    "share_shelf": {
-        "share_shelf_by_visit": [
-            {
-                "plan": 0,
-                "percent": 0,
-                "value": 0,
-                "value_previous": 0,
-                "numerator": 0,
-                "denominator": 72
-            }
-        ],
-        "share_shelf_by_macrocategories": [
-            {
-                "facing": "72.0",
-                "product_macro_category_id": "5e5236ee77ac4-7319",
-                "product_macro_category_name": "OTHER_H",
-                "value": 72,
-                "percent": 0,
-                "matched": 0
-            }
-        ],
-        "share_shelf_by_categories": [
-            {
-                "facing": "72.0",
-                "macro_category_id": "5e5236ee77ac4-7319",
-                "product_category_id": "5e5236ee77ac4-7319",
-                "product_category_name": "OTHER_H",
-                "value": 72,
-                "percent": 0,
-                "matched": 0
-            }
-        ],
-        "share_shelf_by_brands": [
-            {
-                "facing": "0.0",
-                "product_category_id": "5e5236ee77ac4-7319",
-                "product_category_name": "OTHER_H",
-                "brand_id": "ed9c3c78-2ecb-4373-935a-21c3548bb1f5",
-                "brand_name": "Ermigurt",
-                "is_own": 0,
-                "value": 0,
-                "percent": 0
-            },
-            {
-                "facing": "0.0",
-                "product_category_id": "5e5236ee77ac4-7319",
-                "product_category_name": "OTHER_H",
-                "brand_id": "1f7e652d-a65e-4297-a50e-008387b592e0",
-                "brand_name": "Fruttis",
-                "is_own": 0,
-                "value": 0,
-                "percent": 0
-            }
-        ],
-        "share_shelf_type": "facing_cm",
-        "share_shelf_name": "sos_2"
-    },
-    "share_shelf_by_metrics": [
-        {
-            "share_shelf_by_visit": [
-                {
-                    "plan": 0,
-                    "percent": 0,
-                    "value": 0,
-                    "value_previous": 0,
-                    "numerator": 0,
-                    "denominator": 72
-                }
-            ],
-            "share_shelf_by_macrocategories": [
-                {
-                    "facing": "72.0",
-                    "product_macro_category_id": "5e5236ee77ac4-7319",
-                    "product_macro_category_name": "OTHER_H",
-                    "value": 72,
-                    "percent": 0,
-                    "matched": 0
-                }
-            ],
-            "share_shelf_by_categories": [
-                {
-                    "facing": "72.0",
-                    "macro_category_id": "5e5236ee77ac4-7319",
-                    "product_category_id": "5e5236ee77ac4-7319",
-                    "product_category_name": "OTHER_H",
-                    "value": 72,
-                    "percent": 0,
-                    "matched": 0
-                }
-            ],
-            "share_shelf_by_brands": [
-                {
-                    "facing": "0.0",
-                    "product_category_id": "5e5236ee77ac4-7319",
-                    "product_category_name": "OTHER_H",
-                    "brand_id": "ed9c3c78-2ecb-4373-935a-21c3548bb1f5",
-                    "brand_name": "Ermigurt",
-                    "is_own": 0,
-                    "value": 0,
-                    "percent": 0
-                },
-                {
-                    "facing": "0.0",
-                    "product_category_id": "5e5236ee77ac4-7319",
-                    "product_category_name": "OTHER_H",
-                    "brand_id": "1f7e652d-a65e-4297-a50e-008387b592e0",
-                    "brand_name": "Fruttis",
-                    "is_own": 0,
-                    "value": 0,
-                    "percent": 0
-                }
-            ],
-            "share_shelf_type": "facing_cm",
-            "share_shelf_name": "sos_2"
-        }
-    ],
-    "perfectstore": {
-        "tasks": [
-            {
-                "kpis": [
-                    {
-                        "name": "OSA SKU",
-                        "metric_type": "osa_sku",
-                        "matrix_type": "general",
-                        "plan_value": 2,
-                        "fact_value": 1,
-                        "percentage": 0.5,
-                        "score_value": 1
-                    },
-                    {
-                        "name": "OSA Facing",
-                        "metric_type": "osa_facing",
-                        "matrix_type": "general",
-                        "plan_value": 3,
-                        "fact_value": 8,
-                        "percentage": 1,
-                        "score_value": 8
-                    }
-                ],
-                "questions": [
-                    {
-                        "index": 2,
-                        "type": "multiselect",
-                        "name": "В магазине есть зона КСО?",
-                        "answers": [
-                            {
-                                "index": 1,
-                                "name": "Да",
-                                "point": 0
-                            }
-                        ]
-                    },
-                    {
-                        "index": 4,
-                        "type": "select",
-                        "name": "В магазине есть зона КСО?",
-                        "answers": [
-                            {
-                                "index": 2,
-                                "name": "Нет",
-                                "point": 0
-                            }
-                        ]
-                    },
-                    {
-                        "index": 3,
-                        "type": "text",
-                        "name": "asdasd",
-                        "answers": [
-                            {
-                                "index": 1,
-                                "name": "123",
-                                "point": 0
-                            }
-                        ]
-                    }
-                ],
-                "id": "e4ef7a488012c1-98ec7589",
-                "name": "Для регресса",
-                "percentage": 10.9,
-                "total_score": 9
-            }
-        ],
-        "total_visit_score": 9
-    },
-    "visit_stats": {
-        "photo": {
-            "badQuality": 0,
-            "completed": 4,
-            "completed_on_device": 4,
-            "created": 0,
-            "deleted": 1,
-            "goodQuality": 4,
-            "retake": 0,
-            "sent": 0,
-            "sentWithError": 0,
-            "status": "RESULT_OK",
-            "uncompressed": 4,
-            "wait": 0
-        }
     }
 }
 ```
+
+`IR_BROADCAST_V3` — константа action в вашем проекте. Подставьте `com.ailet.app.BROADCAST_WIDGETS_RECEIVED` или `com.ailet.russia.BROADCAST_WIDGETS_RECEIVED` в зависимости от сборки.
+
+| Параметр | Тип | Описание |
+| --- | --- | --- |
+| `internal_visit_id` | `String` | Внутренний идентификатор визита в JEDAI |
+| `visit_id` | `String` | Идентификатор визита |
+| `store_id` | `String` | Идентификатор торговой точки |
+| `user_id` | `String` | Идентификатор пользователя в JEDAI |
+| `total_photos` | `Int` | Количество фото в визите |
+| `completed_photos` | `Int` | Количество обработанных фото |
+| `completed_on_device` | `Int` | **(версия с Palomna)** Количество фото, распознанных on-device |
+| `source` | `String` | **(версия с Palomna)** Источник данных (`online` / `on-device`) |
+| `result` | `String` | `Uri` файла отчета |
+
+## Миграция с IntRtl
+
+Начиная с версии 3.0 класс-клиент `IntRtl` отмечен как устаревший. Используйте `AiletClient`.
+
+Методы нового клиента соответствуют [методам устаревшего клиента](https://github.com/intrtl/AiletLibraryExamples/blob/master/Android/IrLibExample/readme.md#методы).
+
+В аннотацию `Deprecated` каждого метода `IntRtl` добавлены блоки `ReplaceWith`. Android Studio может заменить старый вызов на новый по подсказке.
+
+Отличия нового клиента:
+
+1. Методы не блокируют поток. Вызов возвращает `AiletCall`. Дальше используйте `execute()` или `executeBlocking()`.
+2. При `executeBlocking()` поток исполнения выбираете вы.
+
+До версии 3.0.0:
+
+```kotlin
+client.setPortal(portalName)
+```
+
+Начиная с версии 3.0.0:
+
+```kotlin
+Ailet.getClient()
+    .setPortal(portalName)
+    .execute({ result ->
+        when (result) {
+            // обработка результата
+        }
+    }, { throwable ->
+        // обработка ошибки
+    })
+```
+
+## Пример отчета
+
+Полный JSON лежит в файле [report_exaple.json](./report_exaple.json).
+
+## Известные проблемы
+
+### Gradle 8.x и обфускация
+
+Чтобы сборка с Gradle 8.x не падала при обфускации, проверьте правила в разделе [Правила ProGuard](#правила-proguard). Для Gradle 8.x нужен keep для пакета `com.ailet.**`.
