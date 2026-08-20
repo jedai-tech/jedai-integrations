@@ -1,4 +1,4 @@
-![Latest Release](https://img.shields.io/badge/latest%20release-6.5.4-brightgreen)
+[![Latest Release](https://img.shields.io/badge/latest%20release-6.5.4-brightgreen)](https://github.com/intrtl/specs)
 
 # Интеграция библиотеки JEDAI
 
