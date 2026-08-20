@@ -1,176 +1,245 @@
-# Взаимодействие с приложением Ailet с помощью deeplinks.
+# Взаимодействие через iOS deeplink
 
-- [Взаимодействие с приложением Ailet с помощью deeplinks.](#взаимодействие-с-приложением-ailet-с-помощью-deeplinks)
-  - [Вызов метода](#вызов-метода)
-    - [Создание URL](#создание-url)
-    - [Параметры вызова:](#параметры-вызова)
-    - [Описание методов](#описание-методов)
-    - [Поведение методов в зависимости от параметра task_id](#поведение-методов-в-зависимости-от-параметра-task_id)
-  - [Результат выполнения метода](#результат-выполнения-метода)
-    - [Статус выполенения метода](#статус-выполенения-метода)
-    - [Статус и доступные отчёты в зависимости от наличия задач в визите, фото и обязательности их исполнения](#статус-и-доступные-отчёты-в-зависимости-от-наличия-задач-в-визите-фото-и-обязательности-их-исполнения)
-  - [Примеры использования](#примеры-использования)
-    - [Использование метода sync (например при съемке в оффлайн)](#использование-метода-sync-например-при-съемке-в-оффлайн)
-    - [Для iOS13 и SwiftUI:](#для-ios13-и-swiftui)
-    - [Для iOS ниже 13-й версии или без SwiftUI:](#для-ios-ниже-13-й-версии-или-без-swiftui)
-  - [Примеры отчета](#примеры-отчета)
-    - [Без task_id](without_task_id_response.json)
-    - [С task_id](with_task_id_response.json)
+Через URL-схему `intelligenceretail` можно вызвать приложение JEDAI из своего приложения и не подключать библиотеку JEDAI.
 
-## Вызов метода
-### Создание URL
-Сгенерируйте URL вида `intelligenceretail:?param1=value1&param2=value2` любым удобным для вас способом, например через `URLComponents` и откройте его через UIApplication.shared.open:
+**Условие:** на устройстве установлено приложение JEDAI.
+
+Чтобы [подключить библиотеку JEDAI](../library/readme.md), используйте отдельную инструкцию.
+
+- [Что нужно для работы](#что-нужно-для-работы)
+- [Как вызвать метод](#как-вызвать-метод)
+  - [Методы](#методы)
+  - [Параметры вызова](#параметры-вызова)
+  - [Пример вызова метода](#пример-вызова-метода)
+  - [Как task_id меняет экраны](#как-task_id-меняет-экраны)
+- [Как получить ответ](#как-получить-ответ)
+  - [Формат данных ответа](#формат-данных-ответа)
+  - [Статусы](#статусы)
+  - [Какие отчеты приходят в ответе](#какие-отчеты-приходят-в-ответе)
+  - [Как обработать ответ в SceneDelegate](#как-обработать-ответ-в-scenedelegate)
+  - [Как обработать ответ в AppDelegate](#как-обработать-ответ-в-appdelegate)
+  - [Как обработать ответ в SwiftUI](#как-обработать-ответ-в-swiftui)
+- [Как запустить синхронизацию](#как-запустить-синхронизацию)
+- [Пример сценария](#пример-сценария)
+- [Примеры отчета](#примеры-отчета)
+
+## Что нужно для работы
+
+- На устройстве установлено приложение JEDAI.
+- В вашем приложении зарегистрирована URL-схема. JEDAI вернет результат на нее через параметр `back_url_scheme`.
+
+Чтобы [зарегистрировать URL-схему](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app?language=swift), добавьте ее в `Info.plist`:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>yourappscheme</string>
+        </array>
+    </dict>
+</array>
+```
+
+Чтобы проверять установку JEDAI через `canOpenURL`, добавьте схему `intelligenceretail` в `LSApplicationQueriesSchemes`:
+
+```xml
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>intelligenceretail</string>
+</array>
+```
+
+## Как вызвать метод
+
+Чтобы вызвать метод приложения JEDAI:
+
+1. Соберите URL со схемой `intelligenceretail` и нужными параметрами.
+2. Откройте URL через `UIApplication.shared.open`.
+
+Формат URL: `intelligenceretail:?param1=value1&param2=value2`.
+
+### Методы
+
+| Метод | Что делает | Как возвращает результат |
+| --- | --- | --- |
+| `visit` | Создает или редактирует визит и открывает съемку. Кнопка «Назад» недоступна, пока нет отчетов по всем фото. Если нет интернета и нет неподтвержденных фото, JEDAI вернет `IR_ERROR_NO_INET` | Возврат в ваше приложение по `back_url_scheme` |
+| `report` | Возвращает отчет по визиту | JSON в query-параметре `result` |
+| `summaryReport` | Открывает сводный отчет | Экран в JEDAI |
+| `showVisitReport` | С `task_id` открывает отчет по задаче. Без `task_id` открывает карточку торговой точки со списком задач или сводный отчет, если задач нет | Экран в JEDAI |
+| `sync` | Запускает фоновую отправку фото и получение отчетов | `IR_RESULT_OK`, если в очереди были данные. `IR_RESULT_EMPTY`, если отправлять нечего |
+| `syncCatalogs` | Авторизует пользователя и загружает справочники. Повторный вызов подтягивает обновления | `IR_RESULT_OK` |
+
+### Параметры вызова
+
+| Параметр | Обязательный | Методы | Описание |
+| --- | --- | --- | --- |
+| `method` | Да | Все | Имя метода: `visit`, `report`, `summaryReport`, `showVisitReport`, `sync`, `syncCatalogs` |
+| `login` | Да | Все | Логин пользователя |
+| `password` | Да | Все | Пароль пользователя |
+| `user_id` | Да, если вход идет через внешний идентификатор | Все | Внешний идентификатор пользователя |
+| `store_id` | Да | `visit` | Идентификатор торговой точки |
+| `visit_id` | Да | `visit`, `report`, `summaryReport`, `showVisitReport` | Идентификатор визита |
+| `task_id` | Нет | `visit`, `report`, `summaryReport`, `showVisitReport` | Идентификатор задачи |
+| `back_url_scheme` | Да для `report` и если нужен возврат в ваше приложение | `report`, при возврате — остальные | URL-схема вашего приложения |
+
+### Пример вызова метода
+
 ```swift
 var components = URLComponents()
 components.scheme = "intelligenceretail"
-components.queryItems = [URLQueryItem(name: "method", value: methodName),
-                         URLQueryItem(name: "login", value: login),
-                         URLQueryItem(name: "password", value: password),
-                         URLQueryItem(name: "user_id", value: userId),
-                         URLQueryItem(name: "store_id", value: storeId),
-                         URLQueryItem(name: "visit_id", value: visitId),
-                         URLQueryItem(name: "task_id", value: taskId),
-                         URLQueryItem(name: "back_url_scheme", value: "integrationtestapp")]
-let url = components.url!
-UIApplication.shared.open(url, options: [:]) { (completed) in
-    // Handle completion if needed
+components.queryItems = [
+    URLQueryItem(name: "method", value: methodName),
+    URLQueryItem(name: "login", value: login),
+    URLQueryItem(name: "password", value: password),
+    URLQueryItem(name: "user_id", value: userId),
+    URLQueryItem(name: "store_id", value: storeId),
+    URLQueryItem(name: "visit_id", value: visitId),
+    URLQueryItem(name: "task_id", value: taskId),
+    URLQueryItem(name: "back_url_scheme", value: "yourappscheme")
+]
+guard let url = components.url else { return }
+UIApplication.shared.open(url, options: [:]) { completed in
+    // факт открытия URL
 }
 ```
 
-### Параметры вызова:
+### Как task_id меняет экраны
 
-| Параметр | Обязательно | Описание |
+Таблица описывает методы `visit`, `report` и `summaryReport`. Поведение `showVisitReport` — в таблице [Методы](#методы).
+
+| Содержимое `task_id` | Задачи на портале JEDAI | Поведение |
 | --- | --- | --- |
-| method | Да | Наименование метода (visit, report, summaryReport, showVisitReport, sync, syncCatalogs) |
-| login | Да | Логин пользователя |
-| password | Да | Пароль пользователя |
-| user_id | Да для пользователей, использующих внешний id | внешний идентификатор пользователя |
-| store_id | Да для метода visit | идентификатор торговой точки |
-| visit_id | Да для методов visit, report, summaryReport, showVisitReport | идентификатор визита |
-| task_id | Нет  | идентификатор задачи, используется в методах visit, report, summaryReport, showVisitReport |
-| back_url_scheme | Да для метода report и если необходим возврат в вызывающее приложение | значение кастомной URL схемы вашего приложения |
+| Идентификатор задачи, которой нет на портале | Не важно | **visit** — съемка визита с учетом указанной задачи. **report**, **summaryReport** — отчет по всему визиту |
+| Идентификатор задачи с портала | Есть | **visit** — карточка указанной задачи. **report**, **summaryReport** — отчет в разрезе задачи |
+| Идентификатор задачи с портала | Нет | **visit** — съемка визита с учетом указанной задачи. **report**, **summaryReport** — отчет по всему визиту |
+| Нет | Есть | **visit** — карточка торговой точки со списком задач. **report**, **summaryReport** — отчет по всему визиту |
+| Нет | Нет | **visit** — съемка визита. **report**, **summaryReport** — отчет по всему визиту |
 
-### Описание методов 
+## Как получить ответ
 
-| Метод | Описание | Параметры |
-| --- | --- | --- |
-| visit | Создание/редактирование визита. Открывает экран в режиме съёмки. Пока пользователь не получит отчеты по всем фото из визита, кнопка Назад не будет работать. При отсутствии соединения с интернетом и отсутствия у пользователя неподтвержденных фото, приложение откроет стороннее приложение со статусом IR_ERROR_NO_INET  | method, login, password, user_id, visit_id, store_id, task_id |
-| report | Отчет по визиту. Открывает ваше приложение через URL с отчетом в виде JSON-строки в параметре "report". | method, login, password, user_id, task_id, visit_id, back_url_scheme |
-| summaryReport | Открытие экрана со сводным отчётом. | method, login, password, user_id, visit_id, task_id |
-| showVisitReport | Открытие экрана отчёта по визиту: при `task_id` открывает отчёт по задаче, без `task_id` открывает экран тоговой точки со списком задач или сводный отчёт, если задач в торговой точке нет. | method, login, password, user_id, visit_id, task_id |
-| sync | Запуск фонового процесса передачи фото и получения результатов. В случае наличия данных для отправления и успешного запуска процесса синхронизации метод возвращает статус IR_RESULT_OK. В случае отсутствия данных для синхронизация (все фото отправлены, отчёты для фото и визитов получены) метод вернёт статус IR_RESULT_EMPTY. | method, login, password, user_id |
-| syncCatalogs | Запускает авторизацию и загрузку необходимых для работы справочников. Возвращает в приложение-клиент статус IR_RESULT_OK в случае успешного завершения. При повторном вызове метода загружает обновления по справочникам.  | method, login, password, user_id |
+Чтобы вернуть результат, JEDAI открывает URL вашей схемы:
 
-### Поведение методов в зависимости от параметра task_id
+```text
+yourappscheme://?result={json}
+```
 
-| Содержимое task_id | Наличие задач | Поведение в зависимости от метода|
-| --- | :-: | --- |
-| ID задачи, отсутствующей на портале Ailet | не имеет значения | **visit** - откроется съемка визита с учетом указанной задачи<br>**report**, **summaryReport** - отчет по всему визиту |
-| ID задачи на портале Ailet | есть | **visit** - откроется карточка указанной задачи<br>**report**, **summaryReport** - отчет в разрезе указанной задачи |
-| ID задачи на портале Ailet | нет | **visit** - откроется съемка визита с учетом указанной задачи<br> **report**, **summaryReport** - отчет по всему визиту |
-| нет | есть | **visit** - откроется карточка торговой точки со списком задач<br>**report**, **summaryReport** - отчет по всему визиту |
-| нет | нет | **visit** - откроется съемка визита<br>**report**, **summaryReport** - отчет по всему визиту |
+Схему передайте в `back_url_scheme`. JSON в query-параметре приходит в percent-encoding. `URLComponents` декодирует его сам.
 
-## Результат выполнения метода
+Query-параметр возврата — `result`. Поле `report` лежит внутри JSON, а не в имени параметра URL.
 
-Для передачи результатов отчёта приложение Ailet открывает url вида `{ваша_кастомная_url_схема}:?report={значение_в_виде_json}`.  Кастомная url схема передается через параметр `back_url_scheme`, описанный выше. Подробнее про использование url схем можно прочитать [в документации Apple](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app?language=swift).
+### Формат данных ответа
 
-Для обработки результатов отчета используйте метод `scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)` в `SceneDelegate` для **iOS 13 и выше и использовании SwiftUI** или `application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any])` в `AppDelegate` во всех остальных случаях.
-Ответ приходит в ключе "result" виде JSON, в котором есть следующие значения:
+Изучите [примеры отчета](#примеры-отчета).
 
-| Ключ | Тип | Обязательно | Описание |
-| --- | :-: | :-: | --- |
-| photosCounter | Int | Нет | Количество фото (в визите, если указан task_id - в задаче) |
-| scenesCounter | Int | Нет | Количество сцен (в визите, если указан task_id - в задаче) |
-| notDetectedScenesCounter | Int | Нет | количество нераспознанных сцен (сцен, где есть как минимум одна нераспознанная фото) |
-| notDetectedPhotosCounter | Int | Нет | фото, по которым не получен отчёт, с учётом не отправленных  (в визите, если указан task_id - в задаче)|
-| status | String | Да | Статус IR_RESULT_OK или ошибка для визита|
-| report | JSON | Нет | Отчёт по визиту, если указан task_id - по задаче |
+| Ключ | Тип | Обязательный | Описание |
+| --- | --- | --- | --- |
+| `status` | `String` | Да | Статус выполнения метода |
+| `photosCounter` | `Int` | Нет | Количество фото в визите. Если передан `task_id` — в задаче |
+| `scenesCounter` | `Int` | Нет | Количество сцен в визите. Если передан `task_id` — в задаче |
+| `notDetectedScenesCounter` | `Int` | Нет | Количество сцен, где есть хотя бы одно нераспознанное фото |
+| `notDetectedPhotosCounter` | `Int` | Нет | Количество фото без отчета, включая неотправленные. Если передан `task_id` — в задаче |
+| `report` | JSON | Нет | Отчет по визиту. Если передан `task_id` — по задаче |
 
-
-### Статус выполенения метода
+### Статусы
 
 | Статус | Код | Описание |
-|---|:-:|---|
-| IR_RESULT_OK | 1 | Успешно* |
-| IR_RESULT_EMPTY | 2 | Нет данных** |
-| IR_ERROR | 5 | Неизвестная ошибка |
-| IR_ERROR_NO_INET | 6 | Отсутствует интернет |
-| IR_ERROR_TOKEN | 7 | Ошибка токена |
-| IR_ERROR_STORE_ID_INCORRECT | 10 | Некорректный ИД ТТ|
-| IR_ERROR_VISIT_ID_INCORRECT | 12 | Некорректный ИД визита |
-| IR_ERROR_AUTH | 13 | Ошибка авторизации |
-| IR_RESULT_INPROGRESS | 16 | Данные в обработке |
-| IR_ERROR_NOVISIT | 17 | Отсутствует визит с указанным ИД |
+| --- | --- | --- |
+| `IR_RESULT_OK` | 1 | Метод выполнен успешно. Для `sync`: в очереди были данные, синхронизация запустилась |
+| `IR_RESULT_EMPTY` | 2 | Нет данных. Для `sync`: отправлять нечего — фото уже ушли, отчеты получены |
+| `IR_ERROR` | 5 | Неизвестная ошибка |
+| `IR_ERROR_NO_INET` | 6 | Нет интернета |
+| `IR_ERROR_TOKEN` | 7 | Ошибка токена |
+| `IR_ERROR_STORE_ID_INCORRECT` | 10 | Некорректный идентификатор торговой точки |
+| `IR_ERROR_VISIT_ID_INCORRECT` | 12 | Некорректный идентификатор визита |
+| `IR_ERROR_AUTH` | 13 | Ошибка авторизации |
+| `IR_RESULT_INPROGRESS` | 16 | Данные еще обрабатываются |
+| `IR_ERROR_NOVISIT` | 17 | Визит с указанным идентификатором не найден |
 
-*В методе sync статус IR_RESULT_OK означает наличие неотправленных данных и успешный запуск синхронизации.
+### Какие отчеты приходят в ответе
 
-**В методе sync статус IR_RESULT_EMPTY означает отсутствие данных для отправки (все фото отправлены, все отчеты по фото и визитам получены)
+Состав поля `report` зависит от фото, ответов на вопросы и того, обязательна ли съемка.
 
+Фото обязательны, если в визите нет задач или среди обязательных задач есть съемка:
 
-### Статус и доступные отчёты в зависимости от наличия задач в визите, фото и обязательности их исполнения
+| Данные в визите | Статус | Отчеты |
+| --- | --- | --- |
+| Есть фото, обработаны не все, есть ответы на вопросы | `IR_RESULT_INPROGRESS` (16) | `visit_stats`, `photos`, `share_shelf`, `share_shelf_by_metrics`, `custom`, `assortment_achievement`, `perfect_store` |
+| Есть фото, обработаны не все, нет ответов на вопросы | `IR_RESULT_INPROGRESS` (16) | `visit_stats`, `photos`, `share_shelf`, `share_shelf_by_metrics`, `custom`, `assortment_achievement` |
+| Нет фото, есть ответы на вопросы | `IR_RESULT_EMPTY` (2) | `visit_stats`, `perfect_store` |
+| Нет фото, нет ответов на вопросы | `IR_RESULT_EMPTY` (2) | `visit_stats` |
+| Есть фото, все отправлены, есть ответы на вопросы | `IR_RESULT_OK` (1) | `visit_stats`, `assortment_achievement`, `share_shelf`, `share_shelf_by_metrics`, `custom`, `photos`, `perfect_store` |
+| Есть фото, все отправлены, нет ответов на вопросы | `IR_RESULT_OK` (1) | `visit_stats`, `assortment_achievement`, `share_shelf`, `share_shelf_by_metrics`, `custom`, `photos`, `perfect_store` |
 
-В визите обязательно должны быть фотографии (нет задач / в обязательных задачах есть та, где нужно фотографировать):
+Если съемка не обязательна (в обязательных задачах нет фотографирования), строки совпадают, кроме одной: нет фото, но есть ответы на вопросы → статус `IR_RESULT_OK` (1), а не `IR_RESULT_EMPTY` (2). Набор отчетов тот же: `visit_stats`, `perfect_store`.
 
-| Данные в визите | Статус (код) | Отчеты |
-|---|:-:|---|
-| Есть фото, не все фото обработаны, есть ответы на вопросы | 16 | visit_stats, photos, share_shelf, share_shelf_by_metrics, custom, assortment_achievement, perfect_store |
-| Есть фото, не все фото обработаны, нет ответов на вопросы | 16 | visit_stats, photos, share_shelf, share_shelf_by_metrics, custom, assortment_achievement |
-| Нет фото, есть ответы на вопросы | 2 | visit_stats, perfect_store |
-| Нет фото, нет ответов на вопросы | 2 | visit_stats |
-| Есть фото, все отправлены, есть ответы на вопросы | 1 | visit_stats, assortment_achievement, share_shelf, share_shelf_by_metrics, custom, photos, perfect_store |
-| Есть фото, все отправлены, нет ответов на вопросы | 1 | visit_stats, assortment_achievement, share_shelf, share_shelf_by_metrics, custom, photos, perfect_store |
+### Как обработать ответ в SceneDelegate
 
-В визите не обязательно должны быть фотографии (в обязательных задачах нет тех, где нужно фотографировать):
-
-| Данные в визите | Статус (код) | Отчеты |
-|---|:-:|---|
-| Есть фото, не все фото обработаны, есть ответы на вопросы | 16 | visit_stats, photos, share_shelf, share_shelf_by_metrics, custom, assortment_achievement, perfect_store |
-| Есть фото, не все фото обработаны, нет ответов на вопросы | 16 | visit_stats, photos, share_shelf, share_shelf_by_metrics, custom, assortment_achievement |
-| Нет фото, есть ответы на вопросы | 1 | visit_stats, perfect_store |
-| Нет фото, нет ответов на вопросы | 2 | visit_stats |
-| Есть фото, все отправлены, есть ответы на вопросы | 1 | visit_stats, assortment_achievement, share_shelf, share_shelf_by_metrics, custom, photos, perfect_store |
-| Есть фото, все отправлены, нет ответов на вопросы | 1 | visit_stats, assortment_achievement, share_shelf, share_shelf_by_metrics, custom, photos, perfect_store |
-
-### 
-
-## Примеры использования
-
-### Использование метода sync (например при съемке в оффлайн)
-
-Так как время выполнения фоновых процессов в iOS ограниченно, то может потребоваться принудительно запускать синхронизацию (например если визит выполняется оффлайн), в этом случае можно использовать метод sync. Когда есть данные для отправки, данный метод запустит синхронизацию и вернет статус IR_RESULT_OK, если же синхронизация не требуется, то метод вернет IR_RESULT_EMPTY.
-
-### Для iOS13 и SwiftUI:
+Чтобы обработать ответ в приложении со сценами (iOS 13 и новее), реализуйте метод в `SceneDelegate`:
 
 ```swift
 func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    guard 
+    guard
         let url = URLContexts.first?.url,
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-        let reportQueryItem = components.queryItems?.filter({ $0.name == "result" }).first,
-        let report = reportQueryItem.value
-        else { return }
-    // Do something with report string.
+        let result = components.queryItems?.first(where: { $0.name == "result" })?.value
+    else { return }
+    // разберите JSON из result
 }
 ```
 
-### Для iOS ниже 13-й версии или без SwiftUI:
+### Как обработать ответ в AppDelegate
 
-```swift 
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    guard 
+Чтобы обработать ответ в приложении без сцен, реализуйте метод в `AppDelegate`:
+
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+    guard
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-        let reportQueryItem = components.queryItems?.filter({ $0.name == "result" }).first,
-        let report = reportQueryItem.value
+        let result = components.queryItems?.first(where: { $0.name == "result" })?.value
     else { return false }
-    // Do something with report string.
+    // разберите JSON из result
     return true
 }
 ```
+
+### Как обработать ответ в SwiftUI
+
+Чтобы обработать ответ в SwiftUI, используйте `.onOpenURL`:
+
+```swift
+.onOpenURL { url in
+    guard
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+        let result = components.queryItems?.first(where: { $0.name == "result" })?.value
+    else { return }
+    // разберите JSON из result
+}
+```
+
+## Как запустить синхронизацию
+
+Фоновые задачи в iOS живут недолго. Если визит шел офлайн, синхронизация может не успеть закончиться сама.
+
+Чтобы принудительно отправить фото и получить отчеты:
+
+1. Вызовите метод `sync`.
+2. Если статус `IR_RESULT_OK`, синхронизация запустилась: в очереди были данные.
+3. Если статус `IR_RESULT_EMPTY`, отправлять нечего: фото уже ушли, отчеты получены.
+
+## Пример сценария
+
+Чтобы получить отчет по визиту:
+
+1. Зарегистрируйте URL-схему своего приложения в `Info.plist`.
+2. Откройте JEDAI методом `visit`.
+3. Сделайте фото и выйдите из JEDAI.
+4. Прочитайте `status` в параметре `result`.
+5. Если статус `IR_RESULT_INPROGRESS`, вызовите `sync` и дождитесь повторного возврата.
+6. Если статус `IR_RESULT_OK`, разберите JSON отчета.
+7. Чтобы открыть отчет или сводный отчет, вызовите `report` или `summaryReport`.
+
 ## Примеры отчета
 
-### Без task_id
-[Ответ без task_id](without_task_id_response.json)
-
-### С task_id
-[Ответ с task_id](with_task_id_response.json)
+Изучите [пример отчета без task_id](without_task_id_response.json) и [пример отчета с task_id](with_task_id_response.json).
