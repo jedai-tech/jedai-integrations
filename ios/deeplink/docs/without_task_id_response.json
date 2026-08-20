@@ -1,0 +1,360 @@
+{
+    "status": "IR_RESULT_OK",
+    "scenesCounter": 1,
+    "photosCounter": 1,
+    "report": {
+        "photos": {
+            "602cb5b7098ee-9451": {
+                "scene_id": "602cb5b7098b0-1403",
+                "scene_type": "Не распознано на основном фото",
+                "image_path": "/Documents/14310/2021-02-17-10-20-39-rn-o.jpg",
+                "image_url": "https://.../2021-02-17-06-20-40-4132-o.jpg",
+                "error": {
+                    "codeInt": 1,
+                    "message": "Успешно обработан",
+                    "code": 1
+                },
+                "products": [
+                    {
+                        "facing": 2,
+                        "price_type": 0,
+                        "category_id": "8f0f1b83-8368-40f2-a908-1adeddc7923d",
+                        "price": "46",
+                        "external_id": "006AA8BA-C9D0-49DD-93B2-666E71A407A1",
+                        "width": {
+                            "cm": 16
+                        },
+                        "category_name": "Dairy",
+                        "facing_group": 2,
+                        "name": "Агуша Пюре яблоко-малина-шиповник, doypack, .090"
+                    },                    
+                    {
+                        "facing": 1,
+                        "price_type": 0,
+                        "category_id": "8f0f1b83-8368-40f2-a908-1adeddc7923d",
+                        "price": "0",
+                        "external_id": "",
+                        "width": {
+                            "cm": 18
+                        },
+                        "category_name": "Dairy",
+                        "facing_group": 1,
+                        "name": "Другой продукт (пакет), LP, .250"
+                    }
+                ]
+            }
+        },
+        "result": {
+            "sended_photos": 1,
+            "code": 1,
+            "message": "Успешно обработан",
+            "total_photos": 1,
+            "codeInt": 1,
+            "internal_visit_id": "602cb5b408cda-4745",
+            "visit_id": "q"
+        },
+        "assortment_achievement": [
+            {
+                "id": "006AA8BA-C9D0-49DD-93B2-666E71A407A1",
+                "external_id": "006AA8BA-C9D0-49DD-93B2-666E71A407A1",
+                "facing_plan": 0,
+                "brand_name": "Агуша",
+                "facing_real": 2,
+                "facing_fact": 2,
+                "price": "46",
+                "brand_id": "60b9c6c6-c681-42ea-b93c-019766c0fd0d",
+                "price_type": false,
+                "category_name": "Dairy",
+                "product_category_id": "8f0f1b83-8368-40f2-a908-1adeddc7923d",
+                "name": "Агуша Пюре яблоко-малина-шиповник, doypack, .090"
+            },                   
+            {
+                "price_type": false,
+                "brand_name": "Другой",
+                "product_category_id": "8f0f1b83-8368-40f2-a908-1adeddc7923d",
+                "id": "cedbc3f4-636e-11e7-965b-000d3a250e47",
+                "facing_real": 1,
+                "price": "0",
+                "category_name": "Dairy",
+                "facing_plan": 0,
+                "facing_fact": 1,
+                "name": "Другой продукт (пакет), LP, .250",
+                "brand_id": "cc2b6315-5356-11e7-94af-000d3a250e47"
+            }
+        ],
+        "share_shelf": {
+            "share_shelf_by_visit": [
+                {
+                    "plan": 0,
+                    "percent": 0,
+                    "value": 89,
+                    "value_previous": 80,
+                    "numerator": 8,
+                    "denominator": 9
+                }
+            ],
+            "share_shelf_by_macrocategories": [
+                {
+                    "product_macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                    "product_macro_category_name": "Tradi Dairy",
+                    "value": 9,
+                    "percent": 88.9,
+                    "matched": 8
+                }
+            ],
+            "share_shelf_by_categories": [
+                {
+                    "macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                    "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                    "product_category_name": "Tradi Dairy",
+                    "value": 9,
+                    "percent": 88.9,
+                    "matched": 8
+                }
+            ],
+            "share_shelf_by_brands": [
+                {
+                    "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                    "brand_id": "b7967cd8-77ea-41c5-bcc4-b69e8a65c223",
+                    "brand_name": "Prostokvashino",
+                    "is_own": 1,
+                    "value": 8,
+                    "percent": 88.9
+                },
+                {
+                    "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                    "brand_id": "a45f430d-9e3b-11e7-a5c2-000d3a250e47",
+                    "brand_name": "Другое",
+                    "is_own": 0,
+                    "value": 1,
+                    "percent": 11.1
+                }
+            ],
+            "share_shelf_type": "facing",
+            "share_shelf_name": "Tradi Dairy_милютина"
+        },
+        "share_shelf_by_metrics": [
+            {
+                "share_shelf_by_visit": [
+                    {
+                        "plan": 0,
+                        "percent": 0,
+                        "value": 89,
+                        "value_previous": 80,
+                        "numerator": 8,
+                        "denominator": 9
+                    }
+                ],
+                "share_shelf_by_macrocategories": [
+                    {
+                        "product_macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_macro_category_name": "Tradi Dairy",
+                        "value": 9,
+                        "percent": 88.9,
+                        "matched": 8
+                    }
+                ],
+                "share_shelf_by_categories": [
+                    {
+                        "macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_category_name": "Tradi Dairy",
+                        "value": 9,
+                        "percent": 88.9,
+                        "matched": 8
+                    }
+                ],
+                "share_shelf_by_brands": [
+                    {
+                        "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "brand_id": "b7967cd8-77ea-41c5-bcc4-b69e8a65c223",
+                        "brand_name": "Prostokvashino",
+                        "is_own": 1,
+                        "value": 8,
+                        "percent": 88.9
+                    },
+                    {
+                        "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "brand_id": "a45f430d-9e3b-11e7-a5c2-000d3a250e47",
+                        "brand_name": "Другое",
+                        "is_own": 0,
+                        "value": 1,
+                        "percent": 11.1
+                    }
+                ],
+                "share_shelf_type": "facing",
+                "share_shelf_name": "Tradi Dairy_милютина"
+            },
+            {
+                "share_shelf_by_visit": [
+                    {
+                        "plan": 0,
+                        "percent": 0,
+                        "value": 0,
+                        "value_previous": 0,
+                        "numerator": 0,
+                        "denominator": 103
+                    }
+                ],
+                "share_shelf_by_macrocategories": [
+                    {
+                        "product_macro_category_id": "60dc6900aa1ae-2303",
+                        "product_macro_category_name": "Baby&Kids ambient",
+                        "value": 1,
+                        "percent": 0,
+                        "matched": 0
+                    },
+                    {
+                        "product_macro_category_id": "df9e03dd-e7a2-45d6-8e4d-fa80a03ecc5e",
+                        "product_macro_category_name": "Modern Dairy",
+                        "value": 94,
+                        "percent": 0,
+                        "matched": 0
+                    },
+                    {
+                        "product_macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_macro_category_name": "Tradi Dairy",
+                        "value": 8,
+                        "percent": 0,
+                        "matched": 0
+                    }
+                ],
+                "share_shelf_by_categories": [
+                    {
+                        "macro_category_id": "60dc6900aa1ae-2303",
+                        "product_category_id": "60dc6900aa1ae-2303",
+                        "product_category_name": "Baby&Kids ambient",
+                        "value": 1,
+                        "percent": 0,
+                        "matched": 0
+                    },
+                    {
+                        "macro_category_id": "df9e03dd-e7a2-45d6-8e4d-fa80a03ecc5e",
+                        "product_category_id": "df9e03dd-e7a2-45d6-8e4d-fa80a03ecc5e",
+                        "product_category_name": "Modern Dairy",
+                        "value": 94,
+                        "percent": 0,
+                        "matched": 0
+                    },
+                    {
+                        "macro_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_category_id": "df44a7b9-58ff-4a95-a2fc-9a6d1015ce35",
+                        "product_category_name": "Tradi Dairy",
+                        "value": 8,
+                        "percent": 0,
+                        "matched": 0
+                    }
+                ],
+                "share_shelf_by_brands": [
+                    {
+                        "product_category_id": "60dc6900aa1ae-2303",
+                        "brand_id": "86c15f23-8b3a-4dcf-a2e4-b2aba9c1041d",
+                        "brand_name": "Tema",
+                        "is_own": 1,
+                        "value": 1,
+                        "percent": 100
+                    },
+                    {
+                        "product_category_id": "df9e03dd-e7a2-45d6-8e4d-fa80a03ecc5e",
+                        "brand_id": "7591ae4b-84bc-4061-a518-6ae939a4ed6b",
+                        "brand_name": "Activia",
+                        "is_own": 1,
+                        "value": 28,
+                        "percent": 29.8
+                    }
+                ],
+                "share_shelf_type": "facing",
+                "share_shelf_name": "12_1"
+            }
+        ],
+        "perfectstore": {
+          "total_visit_score": 224,
+          "tasks": [
+              {
+                  "id": "627cf48e09595-1752e0a2",
+                  "name":  "dairy-demo_24",
+                  "total_score": 0,
+                  "percentage": 1.0,
+                  "kpis": [
+                      {
+                          "id": 14,
+                          "name": "display_width_test",
+                          "metric_type": "osa_sku",
+                          "matrix_type": "FilterWithoutScene",
+                          "plan_value": 120,                        
+                          "fact_value": 147.9,
+                          "percentage": 1,
+                          "score_value": 0
+                      }
+                  ],
+                  "questions": [
+                      {
+                          "id": 1,
+                          "index": 1,
+                          "type": "select",
+                          "name": "Сколько касс в магазине",
+                          "required": true,
+                          "answers": [
+                              {                                
+                                  "index": 2,
+                                  "name": "2",
+                                  "point": 1
+                              }
+                          ]
+                      },
+                      {
+                          "id": 2,
+                          "index": 2,
+                          "type": "multiselect",
+                          "name": "Сколько доп. мест продаж в магазине ",
+                          "required": false,
+                          "answers": [
+                              {
+                                  "index": 1,
+                                  "name": "4",
+                                  "point": 2
+                              },
+                              {
+                                  "index": 3,
+                                  "name": "есть, но не выставлен ассортимент производителя",
+                                  "point": 1
+                              }
+                          ]
+                      },
+                      {
+                          "id": 3,
+                          "index": 2,
+                          "type": "text",
+                          "name": "вопрос?",
+                          "required": true,
+                          "answers": [
+                              {
+                                  "index": 1,
+                                  "name": "ответ",
+                                  "point": 2
+                              }
+                          ]
+                      }
+                  ]
+              }
+            ] 
+        },
+        "custom": [],
+        "visit_stats": {
+            "photo_deleted": [],
+            "photo_retake": [],
+            "photo": {
+                "retake": 0,
+                "sent": 1,
+                "deleted": 0,
+                "wait": 0,
+                "created": 1,
+                "completed": 1,
+                "uncompressed": 0
+            },
+            "photo_wait": []
+        }
+    },
+    "notDetectedPhotosCounter": 0,
+    "notDetectedScenesCounter": 0
+}
