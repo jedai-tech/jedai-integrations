@@ -1,35 +1,120 @@
-# Новый API
+![Latest Release](https://img.shields.io/badge/latest%20release-6.5.4-brightgreen)
 
-Начиная с версии `5.10`, доступен новый асинхронный API — предпочтительный способ взаимодействия с фреймворком `IrLibSwift`.
-Используйте `IRInteractManager` для вызовов через новый API. Подробная документация по новым методам и классам доступна для [Swift](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md) и [Objective-C](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-objc.md).
+# Интеграция библиотеки JEDAI
 
-# Совместимость со старым API
+Библиотека JEDAI встраивает съемку визита, отчеты и синхронизацию в ваше iOS-приложение.
 
-Вы можете продолжать использовать старый синхронный API через фреймворк `IRLib`, однако новый асинхронный API более предпочтителен, надёжен и удобен.
+Фреймворк: `IrLibSwift`. Клиент API: `IRInteractManager`. С версии 5.10 это асинхронный API.
 
-# Установка
+Для асинхронного API достаточно `IrLibSwift`. Он нужен и в проекте на Swift, и в проекте на Objective-C.
 
-Если вы хотите использовать новый асинхронный API, вам потребуется только фреймворк `IrLibSwift` — независимо от того, работаете вы со Swift или Objective-C проектом.
+Чтобы вызвать JEDAI без библиотеки, используйте [взаимодействие через iOS deeplink](../deeplink/readme.md).
 
-## Установка через [CocoaPods](https://cocoapods.org) ##
+Изучите [справочник методов для Swift](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md) и [справочник для Objective-C](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-objc.md).
 
-1. Добавьте репозиторий Intelligence Retail specs и официальный репозиторий CocoaPods specs в `Podfile` вашего проекта:
+- [Пример сценария](#пример-сценария)
+- [Что нужно для работы](#что-нужно-для-работы)
+- [Как установить через CocoaPods](#как-установить-через-cocoapods)
+- [Как обновить фреймворк](#как-обновить-фреймворк)
+- [Как инициализировать библиотеку](#как-инициализировать-библиотеку)
+- [Как запустить съемку](#как-запустить-съемку)
+- [Как получить отчет](#как-получить-отчет)
+- [Синхронный API](#синхронный-api)
 
+## Пример сценария
+
+Чтобы провести визит и получить отчет:
+
+1. Подключите `IrLibSwift` через CocoaPods.
+2. Вызовите `IRInteractManager.setup(...)`.
+3. Вызовите `IRInteractManager.startShooting(...)`.
+4. Запросите отчет через `IRInteractManager.report(visitId:)` или подпишитесь на `IRNotification`.
+
+## Что нужно для работы
+
+- CocoaPods.
+- Токен начальной авторизации (`guestToken`). Его выдает команда JEDAI.
+
+## Как установить через CocoaPods
+
+Чтобы [установить через CocoaPods](https://cocoapods.org), добавьте в `Podfile` репозитории, `use_frameworks!` и pod `IrLibSwift`:
+
+```ruby
+source 'https://github.com/CocoaPods/Specs.git'
+source 'https://github.com/intrtl/specs'
+
+use_frameworks!
+
+target 'YourTarget' do
+  pod 'IrLibSwift'
+end
 ```
-     source 'https://github.com/CocoaPods/Specs.git'
-     source 'https://github.com/intrtl/specs'
+
+Затем в каталоге проекта выполните:
+
+```bash
+pod install
 ```
 
-2. Добавьте параметр `use_frameworks!` в ваш `Podfile`.
+## Как обновить фреймворк
 
-3. Добавьте pod `IrLibSwift` как зависимость для targets вашего проекта:
+Чтобы обновить уже установленный `IrLibSwift`, в каталоге проекта выполните:
 
-```
-  target 'YourTarget' do
-    pod 'IrLibSwift'
-  end
+```bash
+pod update IrLibSwift --repo-update
 ```
 
-4. Выполните `pod install` в терминале в каталоге с вашим проектом.
+## Как инициализировать библиотеку
 
-5. Чтобы обновить версию ранее установленного фреймворка, выполните `pod update IrLibSwift --repo-update` в терминале в каталоге с вашим проектом.
+Чтобы начать работу, вызовите [`setup`](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md#setup). Метод авторизует пользователя и загружает данные для работы библиотеки.
+
+```swift
+IRInteractManager.setup(
+    username: "user123",
+    password: "securePassword",
+    guestToken: "guestToken123"
+) { result in
+    switch result {
+    case .success:
+        // библиотека готова к работе
+    case .failure(let error):
+        // разберите IRError
+    }
+}
+```
+
+## Как запустить съемку
+
+Чтобы открыть камеру JEDAI, вызовите [`startShooting`](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md#start-shooting):
+
+```swift
+do {
+    try IRInteractManager.startShooting(
+        in: viewController,
+        externalStoreId: "store123",
+        externalVisitId: "visit456"
+    )
+} catch {
+    // разберите IRError
+}
+```
+
+## Как получить отчет
+
+Чтобы получить локальный отчет по визиту, вызовите [`report(visitId:)`](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md#retrieve-report-data-for-specific-visit):
+
+```swift
+do {
+    let report = try IRInteractManager.report(visitId: "visit123")
+} catch {
+    // разберите ошибку
+}
+```
+
+Чтобы получать обновления по распознаванию фото, подпишитесь на [`IRNotification`](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md#subscribe-for-notifications) через `NotificationCenter`.
+
+Полный список методов, параметров и классов — в [справочнике для Swift](https://github.com/intrtl/AiletLibraryExamples/blob/master/iOS/IrLibSwiftAsyncAPI/IrLibSwift-docs-swift.md).
+
+## Синхронный API
+
+Синхронный API остается во фреймворке `IRLib`. Для новой интеграции подключайте только `IrLibSwift`.
