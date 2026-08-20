@@ -1,3 +1,5 @@
+![Latest Release](https://img.shields.io/badge/latest%20release-6.5.4-brightgreen)
+
 # Взаимодействие через iOS deeplink
 
 Через URL-схему `intelligenceretail` можно вызвать приложение JEDAI из своего приложения и не подключать библиотеку JEDAI.
