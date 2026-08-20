@@ -252,7 +252,7 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 
 Тот же JSON приходит в поле `result` broadcast-сообщения и в `getData()` в `onActivityResult`.
 
-[Пример отчета](https://github.com/intrtl/AiletLibraryExamples/blob/master/Android/IrIntentExample/report_exaple.json)
+[Пример отчета](https://github.com/jedai-tech/jedai-integrations/blob/main/android/library/report_exaple.json)
 
 ## Пример сценария
 
