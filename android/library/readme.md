@@ -1,4 +1,4 @@
-![Latest Release]([https://img.shields.io/badge/latest](https://github.com/intrtl/IRLib/packages/1361609?version=4.20.4)%20release-4.20.4-brightgreen)
+![Latest Release](https://github.com/intrtl/IRLib/packages/1361609?version=4.20.4%20release-4.20.4-brightgreen)
 
 # Интеграция библиотеки JEDAI
 
