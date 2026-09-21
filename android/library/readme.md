@@ -1,10 +1,19 @@
-[![Latest Release](https://img.shields.io/badge/latest%20release-4.20.4-brightgreen)](https://github.com/intrtl/IRLib/packages/1361609/versions)
+[![Latest Release](https://img.shields.io/badge/latest%20release-4.23-brightgreen)](https://github.com/intrtl/IRLib/packages)
 
 # Интеграция библиотеки JEDAI
 
 Библиотека JEDAI встраивает съемку визита, отчеты и синхронизацию в ваше Android-приложение.
 
-Классы API: `Ailet`, `AiletClient`. Пакет Maven: `com.ailet.android:lib`.
+Классы API: `Ailet`, `AiletClient`.
+
+Пакеты Maven:
+
+| Пакет | С версии | Что умеет |
+| --- | --- | --- |
+| `com.ailet.android:lib` | — | Съемка, отчеты, синхронизация. Распознавание только на сервере |
+| `com.ailet.android:lib-offline` | **4.23** | То же, плюс on-device распознавание (Palomna) |
+
+Подключите один пакет. `lib` и `lib-offline` вместе подключать нельзя.
 
 Чтобы вызвать JEDAI без библиотеки, используйте [взаимодействие через Android Intent](../intents/readme.md).
 
@@ -17,6 +26,8 @@
 - [Как инициализировать библиотеку](#как-инициализировать-библиотеку)
 - [Как вызывать методы](#как-вызывать-методы)
 - [On-device распознавание (Palomna)](#on-device-распознавание-palomna)
+  - [Что изменилось в 4.23](#что-изменилось-в-423)
+  - [Как подготовить устройство](#как-подготовить-устройство)
 - [Справочник методов](#справочник-методов)
   - [getServers()](#getservers)
   - [init()](#init)
@@ -30,6 +41,8 @@
   - [logout()](#logout)
   - [getTotalSyncStat()](#gettotalsyncstat)
   - [syncPalomna()](#syncpalomna)
+  - [syncPalomnaCatalogs()](#syncpalomnacatalogs)
+  - [updatePalomna()](#updatepalomna)
 - [Широковещательное сообщение](#широковещательное-сообщение)
 - [Миграция с IntRtl](#миграция-с-intrtl)
 - [Пример отчета](#пример-отчета)
@@ -41,7 +54,7 @@
 Чтобы провести визит и получить отчет:
 
 1. Создайте GitHub personal access token с правом `read:packages`.
-2. Подключите репозиторий Maven и зависимость `com.ailet.android:lib`.
+2. Подключите репозиторий Maven и зависимость `com.ailet.android:lib` или `com.ailet.android:lib-offline`.
 3. Вызовите `Ailet.initialize` в классе `Application`.
 4. Вызовите `init()` через `Ailet.getClient()`.
 5. Вызовите `start()` и сделайте фото.
@@ -52,7 +65,7 @@
 - Токен начальной авторизации. Его выдает команда JEDAI.
 - GitHub-аккаунт с правом читать пакеты `intrtl/IRLib`.
 
-Актуальную версию библиотеки смотрите в [списке версий](https://github.com/intrtl/IRLib/packages/1361609/versions).
+Актуальную версию библиотеки смотрите в [списке пакетов](https://github.com/intrtl/IRLib/packages). Для on-device нужна версия **4.23** и выше пакета `com.ailet.android:lib-offline`.
 
 ### Как создать GitHub personal access token
 
@@ -112,18 +125,28 @@ allprojects {
 
 ### Как добавить зависимости
 
-Чтобы подключить библиотеку, добавьте в `build.gradle` модуля зависимость. Подставьте версию из [списка версий](https://github.com/intrtl/IRLib/packages/1361609/versions):
+Чтобы подключить библиотеку, добавьте в `build.gradle` модуля одну зависимость. Подставьте версию из [списка пакетов](https://github.com/intrtl/IRLib/packages):
+
+Онлайн-распознавание:
 
 ```groovy
-implementation "com.ailet.android:lib:1.0.0"
+implementation "com.ailet.android:lib:4.23.0"
 ```
+
+Онлайн и on-device распознавание. Доступно с версии **4.23**:
+
+```groovy
+implementation "com.ailet.android:lib-offline:4.23.0"
+```
+
+Не подключайте `lib` и `lib-offline` в одной сборке: это разные публикации одного API.
 
 Динамическая версия `+` подтянет последний пакет и может сломать сборку без изменения кода. Для рабочих сборок указывайте конкретную версию.
 
 Чтобы включить модуль техподдержки, добавьте зависимость той же версии, что и у библиотеки:
 
 ```groovy
-implementation "com.ailet.android:lib-feature-techsupport-intercom:1.0.0"
+implementation "com.ailet.android:lib-feature-techsupport-intercom:4.23.0"
 ```
 
 ### Правила ProGuard
@@ -251,9 +274,29 @@ Ailet.getClient().init(
 
 ## On-device распознавание (Palomna)
 
-Часть сборок JEDAI умеет распознавать фото на устройстве. Если в вашей сборке этого нет, пропускайте пометки «версия с Palomna».
+С версии **4.23** on-device распознавание поставляется пакетом `com.ailet.android:lib-offline`. Пакет `com.ailet.android:lib` распознает фото только на сервере.
 
-Чтобы заранее загрузить модели, классы и справочники, вызовите [`syncPalomna()`](#syncpalomna).
+Если подключили `lib`, пропускайте пометки «`lib-offline`, с 4.23».
+
+### Что изменилось в 4.23
+
+- Отдельный Maven-артефакт `com.ailet.android:lib-offline`.
+- Методы [`syncPalomna()`](#syncpalomna), [`syncPalomnaCatalogs()`](#syncpalomnacatalogs), [`updatePalomna()`](#updatepalomna).
+- В `getReports`, broadcast и `getTotalSyncStat` — поля `source` (`online` / `on-device`) и `completed_on_device`.
+- В продуктах отчета — поле `eye_level` для онлайн и on-device.
+- Понятные исключения загрузки: `OnDeviceNotAvailableException`, `OnDeviceDownloadMobileException`, `OnDeviceNeedUpdateException`, `OnDeviceDownloadFailedException`, `OnDeviceNoStoreException`.
+- `getReports` бросает `OnDeviceNotAvailableException`, если нет сети, в визите есть нераспознанные фото, on-device включен, но модели не загружены.
+- `RESULT_OK` выставляется, когда все фото обработаны и по визиту есть виджет. Для `source = on-device` обработанными считаются фото `COMPLETE` и `COMPLETED_WITH_PALOMNA`.
+- В `getTotalSyncStat.total_stat.current_problem` попадает последняя ошибка синхронизации или on-device распознавания.
+
+### Как подготовить устройство
+
+1. Подключите `com.ailet.android:lib-offline:4.23.x`.
+2. Вызовите `init()`.
+3. Пока есть сеть, вызовите [`syncPalomna()`](#syncpalomna). По умолчанию загрузка идет только по Wi-Fi.
+4. Вызовите `start()`. Если модели и классы загружены, без интернета фото обрабатываются на устройстве.
+
+Чтобы догрузить справочники (матрицы, метрики, типы матриц), вызовите [`syncPalomnaCatalogs()`](#syncpalomnacatalogs). Чтобы обновить уже загруженные модели и классы, вызовите [`updatePalomna()`](#updatepalomna).
 
 ## Справочник методов
 
@@ -270,7 +313,9 @@ Ailet.getClient().init(
 | [`finishVisit`](#finishvisit) | Завершает визит |
 | [`logout`](#logout) | Выходит из учетной записи |
 | [`getTotalSyncStat`](#gettotalsyncstat) | Возвращает статистику синхронизации визитов |
-| [`syncPalomna`](#syncpalomna) | Загружает модели и справочники для on-device распознавания |
+| [`syncPalomna`](#syncpalomna) | **(`lib-offline`, с 4.23)** Загружает модели и справочники для on-device распознавания |
+| [`syncPalomnaCatalogs`](#syncpalomnacatalogs) | **(`lib-offline`, с 4.23)** Догружает справочники Palomna (матрицы, метрики, типы матриц) |
+| [`updatePalomna`](#updatepalomna) | **(`lib-offline`, с 4.23)** Обновляет уже загруженные модели и классы |
 
 Чтобы [мигрировать с `IntRtl`](#миграция-с-intrtl), используйте `AiletClient`.
 
@@ -317,7 +362,7 @@ Ailet.getClient().init(
 
 `start()` запускает съемку в рамках визита.
 
-> **On-device (версия с Palomna):** если модели и классы загружены, при отсутствии интернета фото обрабатываются на устройстве.
+> **On-device (`lib-offline`, с 4.23):** если модели и классы загружены, при отсутствии интернета фото обрабатываются на устройстве.
 
 | Параметр | Тип | Обязательный | По умолчанию | Описание |
 | --- | --- | --- | --- | --- |
@@ -356,17 +401,21 @@ Ailet.getClient().init(
 | Ошибка | Текст ошибки | Описание |
 | --- | --- | --- |
 | `AiletException` | `Visit with externalId [externalId] is not found` | Визит с таким идентификатором не найден |
-| `OnDeviceNotAvailableException` | `On-device recognition not available` | **(версия с Palomna)** On-device распознавание недоступно: нет сети и модели не загружены |
+| `OnDeviceNotAvailableException` | `On-device recognition not available` | **(`lib-offline`, с 4.23)** Нет сети, в визите есть нераспознанные фото, on-device включен, но модели не загружены |
 
-> **On-device (версия с Palomna):** в поля `result` и `report.result` добавляются:
-> - `source`: `"online"`, если все фото распознаны на сервере, или `"on-device"`, если хотя бы одно фото распознано только локально;
-> - `completed_on_device`: количество фото, распознанных on-device.
+> **On-device (`lib-offline`, с 4.23):** в поля `result` и `report.result` добавляются:
+> - `source`: `"online"`, если все обработанные фото уже на сервере, или `"on-device"`, если есть фото в Palomna-пайплайне без онлайн-пересчета;
+> - `completed_on_device`: количество фото со статусом `COMPLETED_WITH_PALOMNA`.
+>
+> `RESULT_OK` выставляется, когда все фото обработаны и по визиту есть виджет. Для `source = on-device` обработанными считаются фото `COMPLETE` и `COMPLETED_WITH_PALOMNA`.
+>
+> В объектах продуктов отчета добавляется `eye_level`: `1` — на уровне глаз, `0` — нет, `-1` — определить нельзя. Поле есть и в онлайн, и в on-device.
 
 ### showSummaryReport()
 
 `showSummaryReport()` открывает экран сводного отчета по визиту.
 
-> **On-device (версия с Palomna):** экран показывает данные on-device распознавания.
+> **On-device (`lib-offline`, с 4.23):** экран показывает данные on-device распознавания.
 
 | Параметр | Тип | Обязательный | По умолчанию | Описание |
 | --- | --- | --- | --- | --- |
@@ -390,7 +439,7 @@ Ailet.getClient().init(
 
 `setPortal()` устанавливает текущий портал в мультипортальном режиме.
 
-> **On-device (версия с Palomna):** при переключении портала сохраняются и применяются настройки on-device распознавания для этого портала. После переключения вызовите `syncPalomna()`, если для портала еще не загружали модели.
+> **On-device (`lib-offline`, с 4.23):** при переключении портала сохраняются и применяются настройки on-device распознавания для этого портала. После переключения вызовите `syncPalomna()`, если для портала еще не загружали модели.
 
 | Параметр | Тип | Обязательный | Описание |
 | --- | --- | --- | --- |
@@ -487,15 +536,17 @@ Ailet.getClient()
 
 `logout()` выходит из учетной записи и очищает служебные данные.
 
-> **On-device (версия с Palomna):** если on-device распознавание включено в мобильных настройках, библиотека удалит загруженные модели, классы и справочники. Это произойдет только если следующий `init()` вызовется для другого пользователя.
+> **On-device (`lib-offline`, с 4.23):** если on-device распознавание включено в мобильных настройках, библиотека удалит загруженные модели, классы и справочники. Это произойдет только если следующий `init()` вызовется для другого пользователя.
 
 ### getTotalSyncStat()
 
-Доступно в версии 4.17.3 и выше. Новые поля `source` и `completed_on_device` есть в сборке с Palomna.
+Доступно в версии 4.17.3 и выше. Поля `source` и `completed_on_device` есть в `lib-offline` с версии **4.23**.
 
 `getTotalSyncStat()` возвращает статистику по фотографиям и запускает сервис синхронизации, если он остановлен. Результат — JSON-строка.
 
-> **On-device (версия с Palomna):** в каждый элемент `items` и в `total_stat` добавляются поля `source` (`online` / `on-device`) и `completed_on_device`.
+> **On-device (`lib-offline`, с 4.23):** в каждый элемент `items` и в `total_stat` добавляются поля `source` (`online` / `on-device`) и `completed_on_device`. В `total_stat.current_problem` попадает последняя ошибка синхронизации или on-device распознавания.
+>
+> `source = on-device`, если есть фото в Palomna-пайплайне без онлайн-пересчета. `completed_on_device` — число фото в статусе `COMPLETED` с данными on-device распознавания. `RESULT_OK` — все фото обработаны и есть виджет (онлайн или on-device, в зависимости от `source`).
 
 **Пример ответа**
 
@@ -539,22 +590,28 @@ Ailet.getClient()
 
 ### syncPalomna()
 
+Доступно в `lib-offline` с версии **4.23**.
+
 `syncPalomna()` заранее загружает и обновляет модели, классы и справочники для распознавания на устройстве без интернета.
+
+Если `storeIds` и `externalIds` пустые, библиотека загружает все торговые точки (если их еще нет) и матрицы для ближайших 1000 точек — по геолокации, если она есть, иначе для первых 1000 из справочника. Если передана одна торговая точка, загружаются матрицы для 1000 ближайших к ней. Если передано несколько — только для указанных идентификаторов.
 
 | Параметр | Тип | Обязательный | По умолчанию | Описание |
 | --- | --- | --- | --- | --- |
+| `storeIds` | `List<Long>` | Нет | `listOf()` | Внутренние идентификаторы торговых точек в библиотеке |
 | `externalIds` | `List<String>` | Нет | `listOf()` | Внешние идентификаторы торговых точек |
-| `storeIds` | `List<Int>` | Нет | `listOf()` | Внутренние идентификаторы торговых точек в библиотеке |
 | `useMobile` | `Boolean` | Нет | `false` | Разрешить синхронизацию через мобильную сеть |
-| `isAutoUpdate` | `Boolean` | Нет | `false` | Обновлять модели без запроса пользователя |
+| `isAutoUpdate` | `Boolean` | Нет | `false` | Обновлять модели без запроса пользователя. Если `false` и есть обновление, метод бросит `OnDeviceNeedUpdateException` |
 
 **Ошибки**
 
 | Ошибка | Текст ошибки | Описание |
 | --- | --- | --- |
-| `OnDeviceNotAvailableException` | `On-device not available` | On-device распознавание выключено в настройках |
-| `OnDeviceDownloadMobileException` | `Cant download via mobile network` | Загрузка через мобильную сеть запрещена (`useMobile = false`) |
-| `OnDeviceNoStoreException` | `Store not found` | Торговая точка не найдена |
+| `OnDeviceNotAvailableException` | `On-device not available` | On-device распознавание выключено в настройках или нет моделей и классов |
+| `OnDeviceDownloadMobileException` | `Can't download via mobile network` | Загрузка через мобильную сеть запрещена (`useMobile = false`) |
+| `OnDeviceNeedUpdateException` | `Need update N model(s)` | Есть обновление моделей, но `isAutoUpdate = false` |
+| `OnDeviceDownloadFailedException` | `On-device download failed` | Загрузка моделей или справочников не удалась |
+| `OnDeviceNoStoreException` | `Store not found` / `Stores catalog empty` | Торговая точка не найдена или справочник торговых точек пуст |
 | `Throwable` | `Unauthorized` | Пользователь не авторизован |
 
 При изменении статуса загрузки Palomna библиотека отправляет широковещательное сообщение (broadcast) с `intent.action = SYNC_PALOMNA_STATE`.
@@ -566,6 +623,44 @@ Ailet.getClient()
 | `matricesTypesProgress` | Прогресс загрузки типов матриц |
 | `metricsProgress` | Прогресс загрузки метрик |
 | `imagesProgress` | Прогресс загрузки изображений |
+
+### syncPalomnaCatalogs()
+
+Доступно в `lib-offline` с версии **4.23**.
+
+`syncPalomnaCatalogs()` догружает справочники Palomna: матрицы, типы матриц и метрики. Модели и классы метод не обновляет — для этого используйте [`updatePalomna()`](#updatepalomna) или [`syncPalomna()`](#syncpalomna).
+
+Передайте координаты, чтобы выбрать ближайшие торговые точки. Если координаты не переданы, библиотека использует уже сохраненное местоположение или первые точки из справочника.
+
+| Параметр | Тип | Обязательный | По умолчанию | Описание |
+| --- | --- | --- | --- | --- |
+| `lat` | `Double` | Нет | `null` | Широта для выбора ближайших торговых точек |
+| `lng` | `Double` | Нет | `null` | Долгота для выбора ближайших торговых точек |
+
+**Ошибки**
+
+| Ошибка | Текст ошибки | Описание |
+| --- | --- | --- |
+| `OnDeviceNoStoreException` | `Store not found` / `Stores catalog empty` | Торговая точка не найдена или справочник торговых точек пуст |
+| `OnDeviceDownloadFailedException` | `On-device download failed` | Загрузка справочников не удалась |
+| `Throwable` | `Unauthorized` | Пользователь не авторизован |
+
+Прогресс загрузки приходит тем же broadcast `SYNC_PALOMNA_STATE`, что и у `syncPalomna()`.
+
+### updatePalomna()
+
+Доступно в `lib-offline` с версии **4.23**.
+
+`updatePalomna()` обновляет уже загруженные модели и классы, если сервер отдал новые версии. Параметров нет.
+
+Вызывайте метод, когда `syncPalomna()` вернул `OnDeviceNeedUpdateException`, или чтобы проверить обновления отдельно.
+
+**Ошибки**
+
+| Ошибка | Описание |
+| --- | --- |
+| `OnDeviceDownloadFailedException` | Загрузка обновления не удалась |
+| `Throwable` | Внутренняя ошибка библиотеки. Обратитесь в поддержку |
 
 ## Широковещательное сообщение
 
@@ -632,8 +727,8 @@ private fun parseBroadcastMessage(intent: Intent) {
 | `user_id` | `String` | Идентификатор пользователя в JEDAI |
 | `total_photos` | `Int` | Количество фото в визите |
 | `completed_photos` | `Int` | Количество обработанных фото |
-| `completed_on_device` | `Int` | **(версия с Palomna)** Количество фото, распознанных on-device |
-| `source` | `String` | **(версия с Palomna)** Источник данных (`online` / `on-device`) |
+| `completed_on_device` | `Int` | **(`lib-offline`, с 4.23)** Количество фото, распознанных on-device |
+| `source` | `String` | **(`lib-offline`, с 4.23)** Источник данных (`online` / `on-device`) |
 | `result` | `String` | `Uri` файла отчета |
 
 ## Миграция с IntRtl
