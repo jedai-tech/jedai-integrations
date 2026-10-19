@@ -25,6 +25,7 @@
   - [Правила ProGuard](#правила-proguard)
 - [Как инициализировать библиотеку](#как-инициализировать-библиотеку)
 - [Как вызывать методы](#как-вызывать-методы)
+- [Рекомендуемая последовательность вызовов](#рекомендуемая-последовательность-вызовов)
 - [On-device распознавание (Palomna)](#on-device-распознавание-palomna)
   - [Что изменилось в 4.23](#что-изменилось-в-423)
   - [Как подготовить устройство](#как-подготовить-устройство)
@@ -271,6 +272,81 @@ Ailet.getClient().init(
     }
 );
 ```
+
+## Рекомендуемая последовательность вызовов
+
+Для корректной работы библиотеки и подготовки к съемке (включая работу в офлайн-режиме с on-device распознаванием Palomna) рекомендуется вызывать методы в следующей последовательности:
+
+1. **`init()`** — авторизует пользователя и инициализирует клиент. До успешного завершения `init()` вызывать другие методы нельзя.
+2. **`requestSyncCatalogs()`** — загружает обязательные справочники. Рекомендуется использовать режим `syncMode = SOFT` (быстрая загрузка только необходимых каталогов) и стратегию `strategy = SyncRightNow` (немедленная синхронизация).
+3. **`syncPalomna()`** — *(для пакета `lib-offline`)* подготавливает и скачивает нейросетевые модели, классы и матрицы для выбранных торговых точек (`externalIds`), обеспечивая возможность распознавания без доступа к сети.
+4. **`start()`** — запускает экран съемки визита после того, как все каталоги и модели успешно загружены.
+
+### Пример асинхронного вызова (цепочка callback)
+
+```kotlin
+Ailet.getClient()
+    .init("dev1", "devdev1")
+    .execute({ result ->
+        // Обновление UI после успешной инициализации
+        findViewById<Button>(R.id.btSetPortal).isVisible = true
+        findViewById<View>(R.id.pbWait).isVisible = false
+
+        // Синхронизация обязательных справочников
+        Ailet.getClient().requestSyncCatalogs(
+            syncMode = AiletMethodSyncCatalogs.SyncMode.SOFT,
+            strategy = AiletMethodSyncCatalogs.Strategy.SyncRightNow
+        ).execute({
+            // Загрузка моделей и справочников Palomna для торговых точек
+            Ailet.getClient()
+                .syncPalomna(externalIds = listOf("BUG-0003", "BUG-0004"))
+                .execute({ palomnaResult ->
+                    // Все данные готовы — можно запускать съемку
+                    // Ailet.getClient().start(...).execute(...)
+                }, { throwable ->
+                    println("Ошибка синхронизации Palomna: ${throwable.message}")
+                })
+        }, { throwable ->
+            println("Ошибка синхронизации справочников: ${throwable.message}")
+        })
+    }, { throwable ->
+        println("Ошибка инициализации: ${throwable.message}")
+    })
+```
+
+> **Совет:** Чтобы избежать глубокой вложенности коллбэков, цепочку вызовов можно выполнить последовательно с помощью `executeBlocking()` в фоновом потоке (например, через корутины):
+>
+> ```kotlin
+> lifecycleScope.launch(Dispatchers.IO) {
+>     try {
+>         // 1. Инициализация
+>         Ailet.getClient().init("dev1", "devdev1").executeBlocking()
+>
+>         withContext(Dispatchers.Main) {
+>             findViewById<Button>(R.id.btSetPortal).isVisible = true
+>             findViewById<View>(R.id.pbWait).isVisible = false
+>         }
+>
+>         // 2. Синхронизация справочников
+>         Ailet.getClient().requestSyncCatalogs(
+>             syncMode = AiletMethodSyncCatalogs.SyncMode.SOFT,
+>             strategy = AiletMethodSyncCatalogs.Strategy.SyncRightNow
+>         ).executeBlocking()
+>
+>         // 3. Предзагрузка моделей Palomna для точек
+>         Ailet.getClient()
+>             .syncPalomna(externalIds = listOf("BUG-0003", "BUG-0004"))
+>             .executeBlocking()
+>
+>         // 4. Запуск съемки (на главном потоке)
+>         withContext(Dispatchers.Main) {
+>             // Ailet.getClient().start(...).execute(...)
+>         }
+>     } catch (e: Exception) {
+>         println("Ошибка при подготовке: ${e.message}")
+>     }
+> }
+> ```
 
 ## On-device распознавание (Palomna)
 
