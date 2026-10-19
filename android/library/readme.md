@@ -286,7 +286,7 @@ Ailet.getClient().init(
 
 ```kotlin
 Ailet.getClient()
-    .init("dev1", "devdev1")
+    .init("login", "password")
     .execute({ result ->
         // Обновление UI после успешной инициализации
         findViewById<Button>(R.id.btSetPortal).isVisible = true
@@ -299,7 +299,7 @@ Ailet.getClient()
         ).execute({
             // Загрузка моделей и справочников Palomna для торговых точек
             Ailet.getClient()
-                .syncPalomna(externalIds = listOf("BUG-0003", "BUG-0004"))
+                .syncPalomna(externalIds = listOf("store1", "store2"))
                 .execute({ palomnaResult ->
                     // Все данные готовы — можно запускать съемку
                     // Ailet.getClient().start(...).execute(...)
@@ -320,7 +320,7 @@ Ailet.getClient()
 > lifecycleScope.launch(Dispatchers.IO) {
 >     try {
 >         // 1. Инициализация
->         Ailet.getClient().init("dev1", "devdev1").executeBlocking()
+>         Ailet.getClient().init("login", "password").executeBlocking()
 >
 >         withContext(Dispatchers.Main) {
 >             findViewById<Button>(R.id.btSetPortal).isVisible = true
@@ -335,7 +335,7 @@ Ailet.getClient()
 >
 >         // 3. Предзагрузка моделей Palomna для точек
 >         Ailet.getClient()
->             .syncPalomna(externalIds = listOf("BUG-0003", "BUG-0004"))
+>             .syncPalomna(externalIds = listOf("store1", "store2"))
 >             .executeBlocking()
 >
 >         // 4. Запуск съемки (на главном потоке)
