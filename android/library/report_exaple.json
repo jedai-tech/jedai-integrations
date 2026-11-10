@@ -311,6 +311,67 @@
                 "share_shelf_name": "12_1"
             }
         ],
+        "brand_block": [
+            {
+                "metric_pk": 126,
+                "metric_id": "126",
+                "metric_external_id": "1034",
+                "name": "1034_Блок MMs",
+                "value": 1.0,
+                "value_count": 1,
+                "brand_block_code": "1034",
+                "realogram_items": [
+                    {
+                        "main": true,
+                        "in_rectangle": false,
+                        "task_id": "67bc9517809074-0fdb8be5",
+                        "scene_id": "675bed625025cb-66f60000_after-SC-000006",
+                        "scene_type_id": 2,
+                        "scene_type_name": "Основная полка",
+                        "start_photo_id": "675bed625025cb-66f60000_after-PH-000019",
+                        "end_photo_id": "675bed625025cb-66f60000_after-PH-000020",
+                        "intermediate_photos": [],
+                        "metric_id": "126",
+                        "metric_name": "1034_Блок MMs",
+                        "brand_block_code": "1034",
+                        "area": 388,
+                        "block_execution": 100,
+                        "x1": 1615,
+                        "y1": 1634,
+                        "x2": 2153,
+                        "y2": 3655,
+                        "products": [
+                            {
+                                "product_id": "626664dc0e07c-8277",
+                                "product_external_id": "KKIN87"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "brand_block_by_tasks": [
+            {
+                "task_id": "67bc9517809074-0fdb8be5",
+                "source_id": "1",
+                "task_name": "Основная полка 1",
+                "value": 1.0,
+                "blocks_execution": 100,
+                "fact_value": 1,
+                "assortment": [
+                    {
+                        "product_id": "626664dc0e07c-8277",
+                        "external_base_id": "KKIN87",
+                        "scene_id": "675bed625025cb-66f60000_after-SC-000006",
+                        "scene_type_id": 2,
+                        "facing_fact": 5,
+                        "is_own": 1,
+                        "shelf_pos": 3,
+                        "eye_level": 1
+                    }
+                ]
+            }
+        ],
         "perfectstore": {
             "tasks": [
                 {

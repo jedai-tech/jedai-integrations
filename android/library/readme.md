@@ -487,6 +487,127 @@ Ailet.getClient()
 >
 > В объектах продуктов отчета добавляется параметр `eye_level`: `1` — на уровне глаз, `0` — нет, `-1` — определить нельзя. Поле есть и в онлайн, и в on-device.
 
+> **Brand block (пакет `lib-offline`, с версии 4.24):** в завершённом отчёте только для offline отчета, рядом с `assortment_achievement`, `share_shelf` и `perfectstore`, появляются массивы `brand_block` и `brand_block_by_tasks` в online отчете поля будут пустыми массивами. 
+> В статусах `RESULT_INPROGRESS` и `RESULT_EMPTY` этих ключей нет. 
+> Если виджета `BRAND_BLOCK` нет, массивы пустые.
+
+`brand_block` — метрики бренд-блока.
+
+| Поле | Тип | Описание |
+| --- | --- | --- |
+| `metric_pk` | `Int` | Внутренний ключ метрики |
+| `metric_id` | `String` | Идентификатор метрики |
+| `metric_external_id` | `String` | Внешний идентификатор метрики |
+| `name` | `String` | Название метрики |
+| `value` | `Float` | Доля выполнения блока, 0..1 |
+| `value_count` | `Int` | Число главных прямоугольников |
+| `brand_block_code` | `String` | Код бренд-блока, совпадает с `metric_external_id` |
+| `realogram_items` | `Array` | Прямоугольники блока на реалограмме |
+
+Элемент `realogram_items`:
+
+| Поле | Тип | Описание |
+| --- | --- | --- |
+| `main` | `Boolean` | Главный прямоугольник блока |
+| `in_rectangle` | `Boolean` | Прямоугольник входит в другой блок |
+| `task_id` | `String` | Идентификатор задачи |
+| `scene_id` | `String` | Идентификатор сцены |
+| `scene_type_id` | `Int` | Идентификатор типа сцены |
+| `scene_type_name` | `String` | Название типа сцены |
+| `start_photo_id` | `String` | Первое фото блока |
+| `end_photo_id` | `String` | Последнее фото блока |
+| `intermediate_photos` | `Array<String>` | Промежуточные фото |
+| `metric_id` | `String` | Идентификатор метрики |
+| `metric_name` | `String` | Название метрики |
+| `brand_block_code` | `String` | Код бренд-блока |
+| `area` | `Int` | Площадь блока |
+| `block_execution` | `Int` | Выполнение блока, проценты |
+| `x1`, `y1`, `x2`, `y2` | `Int` | Координаты прямоугольника |
+| `products` | `Array` | Продукты внутри блока |
+
+Элемент `products` содержит только `product_id` и `product_external_id`.
+
+`brand_block_by_tasks` — те же блоки в разрезе задачи.
+
+| Поле | Тип | Описание                                                |
+| --- | --- |---------------------------------------------------------|
+| `task_id` | `String` | Идентификатор задачи                                    |
+| `source_id` | `String` | Внешний идентификатор задачи                            |
+| `task_name` | `String` | Название задачи                                         |
+| `value` | `Float` | флаг наличия главного бренд-блока в задаче: `1` или `0` |
+| `blocks_execution` | `Int` | Среднее выполнение главных блоков, проценты             |
+| `fact_value` | `Int` | Число главных блоков по парам метрика + сцена           |
+| `assortment` | `Array` | Весь распознанный ассортимент задачи                    |
+
+`assortment` — весь распознанный ассортимент задачи. В массив входят продукты с `is_duplicated = 0`.
+
+| Поле | Тип | Описание |
+| --- | --- | --- |
+| `product_id` | `String` | Идентификатор продукта |
+| `external_base_id` | `String` | Внешний идентификатор продукта |
+| `scene_id` | `String` | Идентификатор сцены |
+| `scene_type_id` | `Int` | Идентификатор типа сцены |
+| `facing_fact` | `Int` | Число фейсингов |
+| `is_own` | `Int` | `1` — свой продукт, `0` — чужой |
+| `shelf_pos` | `Int` | Номер полки |
+| `eye_level` | `Int` | `1` — на уровне глаз, `0` — нет, `-1` — определить нельзя |
+
+```json
+{
+  "brand_block": [
+    {
+      "metric_pk": 126,
+      "metric_id": "126",
+      "metric_external_id": "1034",
+      "name": "1034_Блок MMs",
+      "value": 1.0,
+      "value_count": 1,
+      "brand_block_code": "1034",
+      "realogram_items": [
+        {
+          "main": true,
+          "task_id": "67bc9517809074-0fdb8be5",
+          "scene_id": "675bed625025cb-66f60000_after-SC-000006",
+          "brand_block_code": "1034",
+          "area": 388,
+          "block_execution": 100,
+          "products": [
+            {
+              "product_id": "626664dc0e07c-8277",
+              "product_external_id": "KKIN87"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "brand_block_by_tasks": [
+    {
+      "task_id": "67bc9517809074-0fdb8be5",
+      "source_id": "1",
+      "task_name": "Основная полка 1",
+      "value": 1.0,
+      "blocks_execution": 100,
+      "fact_value": 1,
+      "assortment": [
+        {
+          "product_id": "626664dc0e07c-8277",
+          "external_base_id": "KKIN87",
+          "scene_id": "675bed625025cb-66f60000_after-SC-000006",
+          "scene_type_id": 2,
+          "facing_fact": 5,
+          "is_own": 1,
+          "shelf_pos": 3,
+          "eye_level": 1
+        }
+      ]
+    }
+  ]
+}
+```
+
+Полный пример лежит в [report_exaple.json](./report_exaple.json).
+
 ### showSummaryReport()
 
 `showSummaryReport()` открывает экран сводного отчета по визиту.
