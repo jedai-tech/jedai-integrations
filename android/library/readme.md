@@ -389,7 +389,7 @@ Ailet.getClient()
 | [`finishVisit`](#finishvisit) | Завершает визит |
 | [`logout`](#logout) | Выходит из учетной записи |
 | [`getTotalSyncStat`](#gettotalsyncstat) | Возвращает статистику синхронизации визитов |
-| [`syncPalomna`](#syncpalomna) | **(пакет `lib-offline`, с версии 4.23)** Загружает модели и справочники для on-device распознавания |
+| [`syncPalomna`](#syncpalomna) | **(пакет `lib-offline`, с версии 4.23)** Загружает модели и справочники для on-device распознавания. С версии **4.25** можно не загружать торговые точки и матрицы (`downloadMatrices = false`) |
 | [`syncPalomnaCatalogs`](#syncpalomnacatalogs) | **(пакет `lib-offline`, с версии 4.23)** Догружает справочники Palomna (матрицы, метрики, типы матриц) |
 | [`updatePalomna`](#updatepalomna) | **(пакет `lib-offline`, с версии 4.23)** Обновляет уже загруженные модели и классы |
 
@@ -659,6 +659,30 @@ Ailet.getClient()
 | `syncMode` | `AiletMethodSyncCatalogs.SyncMode` | Нет | `AiletMethodSyncCatalogs.SyncMode.EAGER` | `EAGER` — все справочники. `SOFT` — только обязательные |
 | `strategy` | `AiletMethodSyncCatalogs.Strategy` | Нет | `AiletMethodSyncCatalogs.Strategy.Schedule` | `Schedule` — поставить загрузку в очередь. `SyncRightNow` — синхронизировать сразу |
 
+Справочник торговых точек можно не загружать. На это влияют режим синхронизации и флаг мобильных настроек `other.download_stores`. Если поля в настройках нет, библиотека считает его равным `true`.
+
+| Условие | Торговые точки |
+| --- | --- |
+| `syncMode = EAGER` | Загружаются всегда. `download_stores` загрузку не отключает |
+| `syncMode = SOFT` и `other.download_stores = false` | Не загружаются |
+| `syncMode = SOFT`, `other.download_stores = true` и справочник задач не пуст | Загружаются |
+| `syncMode = SOFT` и справочник задач пуст | Не загружаются, даже если `download_stores = true` |
+
+Режим по умолчанию у `requestSyncCatalogs()` — `EAGER`, поэтому без явного `SOFT` точки загружаются.
+
+Устаревшая перегрузка по-прежнему принимает `shouldDownloadStores` и `shouldDownloadTasks`. `shouldDownloadStores = true` соответствует `EAGER`, `false` — `SOFT`. Параметр `shouldDownloadTasks` на загрузку не влияет: задачи качаются по workflow портала, а не по этому флагу. Флаг `other.download_stores` действует и для этой перегрузки, потому что она только выбирает `syncMode`.
+
+```kotlin
+Ailet.getClient().requestSyncCatalogs(
+    syncMode = AiletMethodSyncCatalogs.SyncMode.SOFT,
+    strategy = AiletMethodSyncCatalogs.Strategy.SyncRightNow
+)
+```
+
+При `SOFT` точки не загрузятся, если в мобильных настройках `other.download_stores = false` или справочник задач пуст. Тот же эффект у устаревшего вызова с `shouldDownloadStores = false`.
+
+`downloadMatrices = false` у [`syncPalomna()`](#syncpalomna) этот справочник не заменяет: он отключает загрузку точек и матриц только внутри синхронизации Palomna.
+
 **Ошибки**
 
 | Ошибка | Текст ошибки | Описание |
@@ -793,12 +817,33 @@ Ailet.getClient()
 
 Если поля `storeIds` и `externalIds` пустые, библиотека загружает все торговые точки (если их еще нет) и матрицы для ближайших 1000 точек — по геолокации, если она есть, иначе для первых 1000 из справочника. Если передана одна торговая точка, загружаются матрицы для 1000 ближайших к ней. Если передано несколько — только для указанных идентификаторов.
 
+> **С версии 4.25 (пакет `lib-offline`):** параметр `downloadMatrices` отключает загрузку справочника торговых точек, матриц и типов матриц. Модели, классы, метрики и изображения загружаются как раньше. Пока параметр не передан или равен `null`, поведение прежнее: точки и матрицы загружаются.
+
 | Параметр | Тип | Обязательный | По умолчанию | Описание |
 | --- | --- | --- | --- | --- |
 | `storeIds` | `List<Long>` | Нет | `listOf()` | Внутренние идентификаторы торговых точек в библиотеке |
 | `externalIds` | `List<String>` | Нет | `listOf()` | Внешние идентификаторы торговых точек |
 | `useMobile` | `Boolean` | Нет | `false` | Разрешить синхронизацию через мобильную сеть |
 | `isAutoUpdate` | `Boolean` | Нет | `false` | Обновлять модели без запроса пользователя. Если `false` и есть обновление, метод бросит `OnDeviceNeedUpdateException` |
+| `downloadMatrices` | `Boolean?` | Нет | `null` | **(пакет `lib-offline`, с версии 4.25)** Загружать справочник торговых точек, матрицы и типы матриц. `true` — загружать и запомнить выбор. `false` — не загружать и запомнить выбор. `null` — не менять сохранённый выбор; если его ещё не было, точки и матрицы загружаются |
+
+Чтобы не загружать торговые точки и матрицы, вызовите метод с `downloadMatrices = false`:
+
+```kotlin
+Ailet.getClient()
+    .syncPalomna(downloadMatrices = false)
+    .executeBlocking()
+```
+
+Библиотека запоминает отказ. Следующие вызовы `syncPalomna()` и `syncPalomnaCatalogs()` не загружают справочник торговых точек, матрицы и типы матриц, пока снова не вызвать `syncPalomna(downloadMatrices = true)`. Параметры `storeIds` и `externalIds` в этом режиме на загрузку точек и матриц не влияют. Прогресс `matricesProgress` и `matricesTypesProgress` приходит как завершённый.
+
+Чтобы снова включить загрузку:
+
+```kotlin
+Ailet.getClient()
+    .syncPalomna(downloadMatrices = true)
+    .executeBlocking()
+```
 
 **Ошибки**
 
